@@ -1,0 +1,38 @@
+{
+	"schemaVersion": 1,
+	"id": "counter",
+	"version": "${version}",
+	"name": "CounterMod",
+	"description": "Personal counter mod to track counters for :thumbsup:, RIP, etc. on each server I play on.",
+	"authors": [
+		"TurtleCamera"
+	],
+	"contact": {
+		"homepage": "https://github.com/TurtleTech-Minecraft/",
+		"sources": "https://github.com/TurtleTech-Minecraft/Skyblock-Fabric"
+	},
+	"license": "CC0-1.0",
+	"environment": "server",
+	"entrypoints": {
+		"main": [
+			"com.Counter.CounterMod"
+		],
+		"client": []
+	},
+	"mixins": [
+		"counter.mixins.json",
+		{
+			"config": "counter.server.mixins.json",
+			"environment": "server"
+		}
+	],
+	"depends": {
+		"fabricloader": ">=0.17.2",
+		"minecraft": "~1.21.8",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+	"suggests": {
+		"another-mod": "*"
+	}
+}
