@@ -8,11 +8,11 @@ public class CounterConfig {
     public HashMap<String, HashMap<String, Integer>> counters = new HashMap<>();
 
     // Keeps track of the emotes that we want to keep a counter for
-    ArrayList<String> emotes = new ArrayList<>();
+    public ArrayList<String> emotes = new ArrayList<>();
 
     // If this variable is not null, then this emote will be appended to the end of the sentence
-    String appendEmote = null;
+    public String appendEmote = null;
 
     // Enables or disables all the features of this mod
-    boolean enable = false;
+    public boolean enable = false;
 }
