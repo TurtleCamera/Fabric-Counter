@@ -22,50 +22,47 @@ public class LeviathanDistance {
         return dp[a.length()][b.length()];
     }
 
-    public static Map<String, Object> fixAppleMisspellings(String text, String targetWord, int maxDistance) {
+    public static Map<String, Object> fixMisspellings(String text, String targetWord, int maxDistance) {
         String[] words = text.split("\\s+");
-        boolean[] skip = new boolean[words.length]; // mark words to skip if joined
-        List<Integer> fixedIndices = new ArrayList<>(); // to store the starting indices of fixed words
+        boolean[] skip = new boolean[words.length]; // Mark words to skip if joined
 
-        // Precompute the starting indices of each word
-        List<Integer> startIndices = new ArrayList<>();
-        int index = 0;
-        for (String word : words) {
-            startIndices.add(index);
-            index += word.length() + 1; // +1 to account for space after each word
-        }
-
+        // Step 1: Correct misspellings in place
         for (int i = 0; i < words.length; i++) {
             if (skip[i]) continue;
 
             String cleaned = words[i].replaceAll("\\p{Punct}", "").toLowerCase();
             if (levenshteinDistance(cleaned, targetWord) <= maxDistance) {
-                words[i] = "apple";
-                fixedIndices.add(startIndices.get(i));
+                words[i] = targetWord;
                 continue;
             }
-            
+
             // Try joining with next word
             if (i < words.length - 1) {
                 String joined = cleaned + words[i + 1].replaceAll("\\p{Punct}", "").toLowerCase();
                 if (levenshteinDistance(joined, targetWord) <= maxDistance) {
-                    words[i] = "apple";
+                    words[i] = targetWord;
                     words[i + 1] = ""; // remove second part
-                    fixedIndices.add(startIndices.get(i));
                     skip[i + 1] = true;
                 }
             }
         }
 
-        // Rebuild final text
+        // Step 2: Rebuild final text and compute fixed indices in the new string
         StringBuilder result = new StringBuilder();
+        List<Integer> fixedIndices = new ArrayList<>();
+        int currentIndex = 0;
+
         for (String word : words) {
             if (!word.isEmpty()) {
+                if (word.equals(targetWord)) {
+                    fixedIndices.add(currentIndex);
+                }
                 result.append(word).append(" ");
+                currentIndex += word.length() + 1; // word + space
             }
         }
 
-        // Return the fixed text and the list of starting indices
+        // Step 3: Return results
         Map<String, Object> resultMap = new HashMap<>();
         resultMap.put("fixedText", result.toString().trim());
         resultMap.put("fixedIndices", fixedIndices);
@@ -74,8 +71,9 @@ public class LeviathanDistance {
     }
 
     public static void main(String[] args) {
-        String text = "I love aple and applle and ap ple. APPLE is great! Even appel.";
-        Map<String, Object> result = fixAppleMisspellings(text, "apple", 2);
+        // String text = "I love aple and applle and ap ple. APPLE is great! Even appel.";
+        String text = "So much l el. Lel X2, he sux. Le ll. lell. lells. lellz. lellzz. lellzzz.";
+        Map<String, Object> result = fixMisspellings(text, "lel", 2);
         String fixedText = (String) result.get("fixedText");
         List<Integer> fixedIndices = (List<Integer>) result.get("fixedIndices");
 
