@@ -1,0 +1,18 @@
+package com.Counter.config;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+public class CounterConfig {
+    // Maps server IP to another hashmap that maps the emote string to the current count
+    public HashMap<String, HashMap<String, Integer>> counters = new HashMap<>();
+
+    // Keeps track of the emotes that we want to keep a counter for
+    ArrayList<String> emotes = new ArrayList<>();
+
+    // If this variable is not null, then this emote will be appended to the end of the sentence
+    String appendEmote = null;
+
+    // Enables or disables all the features of this mod
+    boolean enable = false;
+}
