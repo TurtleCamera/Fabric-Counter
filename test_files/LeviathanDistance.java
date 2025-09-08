@@ -51,14 +51,25 @@ public class LeviathanDistance {
         StringBuilder result = new StringBuilder();
         List<Integer> fixedIndices = new ArrayList<>();
         int currentIndex = 0;
+        String prevWord = null;
 
         for (String word : words) {
             if (!word.isEmpty()) {
+                String finalWord = word;
+
+                // Capitalize if at sentence start
                 if (word.equals(targetWord)) {
+                    boolean isSentenceStart = (prevWord == null) ||
+                            prevWord.matches(".*[.!?]$");
+                    if (isSentenceStart) {
+                        finalWord = targetWord.substring(0, 1).toUpperCase() + targetWord.substring(1);
+                    }
                     fixedIndices.add(currentIndex);
                 }
-                result.append(word).append(" ");
-                currentIndex += word.length() + 1; // word + space
+
+                result.append(finalWord).append(" ");
+                currentIndex += finalWord.length() + 1; // word + space
+                prevWord = finalWord;
             }
         }
 
@@ -71,9 +82,9 @@ public class LeviathanDistance {
     }
 
     public static void main(String[] args) {
-        // String text = "I love aple and applle and ap ple. APPLE is great! Even appel.";
-        String text = "So much l el. Lel X2, he sux. Le ll. lell. lells. lellz. lellzz. lellzzz.";
-        Map<String, Object> result = fixMisspellings(text, "lel", 2);
+        String text = "I love aple and applle and ap ple. APPLE is great! Even appel.";
+        // String text = "l el. So much l el. Lel X2, he sux. Le ll. lell. lells. lellz. lellzz. lellzzz.";
+        Map<String, Object> result = fixMisspellings(text, "apple", 2);
         String fixedText = (String) result.get("fixedText");
         List<Integer> fixedIndices = (List<Integer>) result.get("fixedIndices");
 
