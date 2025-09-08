@@ -12,7 +12,7 @@
 		"sources": "https://github.com/TurtleTech-Minecraft/Skyblock-Fabric"
 	},
 	"license": "CC0-1.0",
-	"environment": "server",
+	"environment": "client",
 	"entrypoints": {
 		"main": [
 			"com.Counter.CounterMod"
@@ -22,8 +22,8 @@
 	"mixins": [
 		"counter.mixins.json",
 		{
-			"config": "counter.server.mixins.json",
-			"environment": "server"
+			"config": "counter.client.mixins.json",
+			"environment": "client"
 		}
 	],
 	"depends": {
