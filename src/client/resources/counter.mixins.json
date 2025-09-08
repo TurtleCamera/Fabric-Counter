@@ -3,7 +3,8 @@
 	"package": "com.Counter.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-      "ModifyMessageMixin"
+      "ModifyMessageMixin",
+      "ModInputSuggestorMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

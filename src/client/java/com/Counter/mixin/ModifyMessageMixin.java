@@ -1,5 +1,6 @@
 package com.Counter.mixin;
 
+import com.Counter.utils.CommandHandler;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -14,8 +15,13 @@ public class ModifyMessageMixin {
             cancellable = true
     )
     private void onSendChatMessage(String content, CallbackInfo ci) {
-        content = "This message has been replaced";
-        System.out.println("Test");
-        ci.cancel();
+        // Is this a command?
+        if (CommandHandler.isCommand(content)) {
+            // Parse the command
+            CommandHandler.parseCommand(content);
+
+            // Don't send this message into the chat
+            ci.cancel();
+        }
     }
 }
