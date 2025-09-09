@@ -1,5 +1,6 @@
 package com.Counter;
 
+import com.Counter.command.ModCommandRegistry;
 import com.Counter.config.ConfigManager;
 import com.Counter.config.CounterConfig;
 import net.fabricmc.api.ModInitializer;
@@ -13,12 +14,18 @@ public class CounterMod implements ModInitializer {
     // Managers
     public static ConfigManager<CounterConfig> configManager;   // Config manager
 
+    // Command registry
+    public static ModCommandRegistry modCommandRegistry;
+
 	@Override
 	public void onInitialize() {
 		LOGGER.info("Counter mod initialized!");
 
         // Initialize managers
         configManager = new ConfigManager<>(CounterConfig.class, MOD_ID);
+
+        // Create the command registry
+        modCommandRegistry = new ModCommandRegistry();
 
         // Load the config
         configManager.loadConfig();

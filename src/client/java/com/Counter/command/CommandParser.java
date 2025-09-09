@@ -1,4 +1,4 @@
-package com.Counter.utils;
+package com.Counter.command;
 
 import com.Counter.CounterMod;
 import net.minecraft.client.MinecraftClient;
@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
 // Contains various helper functions for handling client-side commands
-public class CommandHandler {
+public class CommandParser {
     // Use a period as the delimiter because a lot of other mods use "#" instead.
     private static char DELIMITER = '.';
 
