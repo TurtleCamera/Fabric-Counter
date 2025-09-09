@@ -31,8 +31,8 @@ public abstract class ModInputSuggestorMixin {
 
         // Make sure this is a mod command
         if (text.startsWith(".")) {
-            // Strip the dot
-            String typed = text.substring(1, cursor);
+            // Only consider the part up to the cursor
+            String typed = text.substring(0, cursor);
 
             // Start from the beginning of the command
             String[] parts = typed.split(" ");
@@ -40,18 +40,14 @@ public abstract class ModInputSuggestorMixin {
             String currentArgument = parts[argumentIndex];
 
             // Builder and suggestions
-            SuggestionsBuilder builder = new SuggestionsBuilder(typed, typed.lastIndexOf(' ') + 1);
-            Collection<String> suggestions;
+            Collection<String> suggestions = new ArrayList<>();
 
             // Loop through all the arguments
             ArrayList<ModCommand> nodes = CounterMod.modCommandRegistry.COMMANDS;
+            boolean cancelled = false;  // In the vanilla behavior, there are some edge cases where nothing is suggested
             while (true) {
                 // Does our current argument match any of the names of the current commands?
                 int index = ModCommandRegistry.findMatchIndex(nodes, currentArgument);
-//                for (String part: parts) {
-//                    System.out.println(part);
-//                }
-//                System.out.println();
                 if (index <= -1) {
                     // Suggest the current commands
                     suggestions = ModCommandRegistry.createSuggestions(nodes);
@@ -67,31 +63,36 @@ public abstract class ModInputSuggestorMixin {
                         nodes = nodes.get(index).children;
                         currentArgument = parts[argumentIndex];
                     }
-                    else if (typed.endsWith(" ")) {
-                        // If the player typed a space at the end of the text, then suggest the next set of commands
-                        nodes = nodes.get(index).children;
-                        suggestions = ModCommandRegistry.createSuggestions(nodes);
+                    else if (!typed.endsWith(" ")) {
+                        // According to vanilla's behavior, the suggestor's behavior changes if they correctly
+                        // typed all parts of the command up to the end correctly. If the last argument is
+                        // a literal and there's no space in the end, the vanilla code suggests nothing.
+                        cancelled = true;
                         break;
                     }
                     else {
-                        // Player didn't type an additional argument, so keep suggesting the current command
+                        // There's a space at the end, so suggest the next set of commands
+                        nodes = nodes.get(index).children;
                         suggestions = ModCommandRegistry.createSuggestions(nodes);
                         break;
                     }
                 }
             }
 
-            this.pendingSuggestions = CommandSource.suggestMatching(suggestions, builder);
+            if (!cancelled) {
+                SuggestionsBuilder builder = new SuggestionsBuilder(typed, typed.lastIndexOf(' ') + 1);
+                this.pendingSuggestions = CommandSource.suggestMatching(suggestions, builder);
 
-            // Trigger display like vanilla does
-            this.pendingSuggestions.thenRun(() -> {
-                if (this.pendingSuggestions.isDone()) {
-                    ((ChatInputSuggestor)(Object)this).show(false);
-                }
-            });
+                // Trigger display like vanilla does
+                this.pendingSuggestions.thenRun(() -> {
+                    if (this.pendingSuggestions.isDone()) {
+                        ((ChatInputSuggestor) (Object) this).show(false);
+                    }
+                });
 
-            // Cancel the remaining vanilla logic
-            ci.cancel();
+                // Cancel the remaining vanilla logic
+                ci.cancel();
+            }
         }
     }
 }
