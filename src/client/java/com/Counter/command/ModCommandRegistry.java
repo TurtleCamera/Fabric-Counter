@@ -16,17 +16,22 @@ public class ModCommandRegistry {
         // .untrack
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
-        // dummy example
+        // dummy example 1
         ModCommand sethome = new ModCommand(".sethome", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("name", ModCommand.ArgType.STRING)
                         .then(new ModCommand("<x>", ModCommand.ArgType.INTEGER)
                             .then(new ModCommand("<y>", ModCommand.ArgType.INTEGER)
                                 .then(new ModCommand("<z>", ModCommand.ArgType.INTEGER)))));
+        // dummy example 2
+        ModCommand greedy = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("test", ModCommand.ArgType.STRING)
+                        .then(new ModCommand("consume", ModCommand.ArgType.GREEDY)));
 
         // Add all commands
         COMMANDS.add(track);
         COMMANDS.add(untrack);
         COMMANDS.add(sethome);
+        COMMANDS.add(greedy);
     }
 
     // Given an argument, return an index in modCommands if it matches any of the command names
@@ -38,6 +43,11 @@ public class ModCommandRegistry {
                 // Always match (if it's one of these types, it should be the only child of the parent node)
                 // TODO: Perhaps handle the logic of checking the correct type if needed
                 return i;
+            }
+
+            if (currentCommand.type == ModCommand.ArgType.GREEDY) {
+                // Greedy arguments consume the rest of the input, so stop here
+                return -1;
             }
 
             if (currentCommand.type == ModCommand.ArgType.LITERAL && currentCommand.name.equals(argument)) {

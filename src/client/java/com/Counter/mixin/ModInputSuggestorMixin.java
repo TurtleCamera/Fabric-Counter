@@ -53,11 +53,17 @@ public abstract class ModInputSuggestorMixin {
             ArrayList<ModCommand> nodes = CounterMod.modCommandRegistry.COMMANDS;
             boolean cancelled = false;  // In the vanilla behavior, there are some edge cases where nothing is suggested
             while (true) {
-                // Does our current argument match any of the names of the current commands?
+                // Does our current argument match any of the names of the current commands or is a greedy argument?
                 int index = ModCommandRegistry.findMatchIndex(nodes, currentArgument);
                 if (index <= -1) {
                     // Suggest the current commands
                     suggestions = ModCommandRegistry.createSuggestions(nodes);
+
+                    // If this is a greedy argument and the player typed something, don't suggest anything
+                    if (nodes.get(0).type == ModCommand.ArgType.GREEDY && parts[argumentIndex].length() > 0) {
+                        cancelled = true;
+                    }
+
                     break;
                 }
                 else {

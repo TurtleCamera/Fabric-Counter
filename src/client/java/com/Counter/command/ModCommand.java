@@ -9,7 +9,8 @@ public class ModCommand {
         LITERAL,    // Fixed string
         STRING,     // Single word
         INTEGER,
-        DOUBLE
+        DOUBLE,
+        GREEDY      // Consumes the rest of the input
     }
 
     public String name;     // Name for literal or placeholder for arguments
