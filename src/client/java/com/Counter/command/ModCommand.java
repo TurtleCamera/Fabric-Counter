@@ -15,6 +15,7 @@ public class ModCommand {
     public String name;     // Name for literal or placeholder for arguments
     public ArgType type;
     public ArrayList<ModCommand> children = new ArrayList<>();   // Stores child arguments
+    public CommandAction action;    // Executable for the command
 
     public ModCommand(String name, ArgType type) {
         this.name = name;
@@ -47,7 +48,20 @@ public class ModCommand {
                     child.name + "' because a non-literal child already exists.");
         }
 
+        // Can't add children if this is a leaf node (has an action)
+        if (action != null) {
+            throw new IllegalArgumentException("Cannot add a child if this is a leaf node (has an action).");
+        }
+
         children.add(child);
+        return this;
+    }
+
+    public ModCommand executes(CommandAction action) {
+        if (children.size() > 0) {
+            throw new IllegalArgumentException("Only leaf commands can have an action.");
+        }
+        this.action = action;
         return this;
     }
 }

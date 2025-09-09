@@ -1,6 +1,8 @@
 package com.Counter.command;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ModCommandRegistry {
     public ArrayList<ModCommand> COMMANDS;
@@ -15,11 +17,23 @@ public class ModCommandRegistry {
                 .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
         // .untrack
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
+                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING)
+                .executes(context -> {
+                    String emote = context.getString("emote");
+                    for (int i = 0; i < 1000; i ++) {
+                        System.out.println(emote);
+                    }
+                }));
 
         // Add all commands
         register(track);
         register(untrack);
+
+        // Test
+        Map<String, Object> parsedArgs = new HashMap<>();
+        parsedArgs.put("emote", "TEST");
+        CommandContext context = new CommandContext(parsedArgs);
+        untrack.children.get(0).action.execute(context);
     }
 
     // Registers the command
