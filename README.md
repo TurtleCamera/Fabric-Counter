@@ -1,2 +1,2 @@
-# TurtleTech Extreme Skyblock (Fabric)
-This is the official Fabric port of the TurtleTech Extreme Skyblock plugin.
+# Minecraft Fabric Counter Mod
+This is a personal mod that tracks the counters for various phrases such as :thumbsup:, RIP, etc. and automates using these phrases and counters in the chat.
