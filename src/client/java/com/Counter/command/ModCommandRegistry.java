@@ -39,10 +39,7 @@ public class ModCommandRegistry {
                 // TODO: Perhaps handle the logic of checking the correct type if needed
                 return i;
             }
-            else if (currentCommand.type == ModCommand.ArgType.GREEDY) {
-                // Greedy arguments should just accept whatever remaining text that's typed
-                return -1;
-            }
+
             if (currentCommand.type == ModCommand.ArgType.LITERAL && currentCommand.name.equals(argument)) {
                 // Matches the literal
                 return i;
