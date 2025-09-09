@@ -33,7 +33,11 @@ public abstract class ModInputSuggestorMixin {
         if (text.startsWith(".")) {
             // Edge case: Typing an extra space where you shouldn't should stop all suggestions
             // TODO: This should display an error while also disabling tab completion. Perhaps
-            //       consider figuring this out in the future when you have the time.
+            //       consider figuring this out in the future when you have the time. Note that
+            //       greedy arguments should take in double spaces. The logic here is still
+            //       correct because typing anything, including double spaces, for the greedy
+            //       argument (or any argument) should stop suggesting. The parser will consider
+            //       the double spaces.
             if (text.startsWith(". ") || text.contains("  ")) {
                 return;
             }
@@ -59,8 +63,9 @@ public abstract class ModInputSuggestorMixin {
                     // Suggest the current commands
                     suggestions = ModCommandRegistry.createSuggestions(nodes);
 
-                    // If this is a greedy argument and the player typed something, don't suggest anything
+                    // Edge cases for cancelling the suggestions
                     if (nodes.get(0).type == ModCommand.ArgType.GREEDY && parts[argumentIndex].length() > 0) {
+                        // If this is a greedy argument and the player typed something, don't suggest anything
                         cancelled = true;
                     }
 
