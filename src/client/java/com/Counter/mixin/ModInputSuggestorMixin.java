@@ -31,6 +31,15 @@ public abstract class ModInputSuggestorMixin {
 
         // Make sure this is a mod command
         if (text.startsWith(".")) {
+            // Edge case: Typing an extra space where you shouldn't should stop all suggestions
+            // TODO: This should display an error while also disabling tab completion. Perhaps
+            //       consider figuring this out in the future when you have the time. Also,
+            //       keep in mind that greedy arguments should allow double spaces, but this
+            //       logic would disable that.
+            if (text.startsWith(". ") || text.contains("  ")) {
+                return;
+            }
+
             // Only consider the part up to the cursor
             String typed = text.substring(0, cursor);
 
