@@ -16,102 +16,10 @@ public class ModCommandRegistry {
         // .untrack
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
-        // dummy example 1
-        ModCommand sethome = new ModCommand(".sethome", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("name", ModCommand.ArgType.STRING)
-                        .then(new ModCommand("<x>", ModCommand.ArgType.INTEGER)
-                            .then(new ModCommand("<y>", ModCommand.ArgType.INTEGER)
-                                .then(new ModCommand("<z>", ModCommand.ArgType.INTEGER)))));
-        // dummy example 2
-        ModCommand greedy = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("test", ModCommand.ArgType.STRING)
-                        .then(new ModCommand("consume", ModCommand.ArgType.GREEDY)));
-
-        // Invalid example 1
-//        ModCommand invalid_1 = new ModCommand("greedy", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("test", ModCommand.ArgType.STRING)
-//                        .then(new ModCommand("consume", ModCommand.ArgType.GREEDY)));
-//        // Invalid example 2
-//        ModCommand invalid_1 = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("test", ModCommand.ArgType.STRING)
-//                        .then(new ModCommand("consume", ModCommand.ArgType.GREEDY))
-//                            .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL)));
-//        // Invalid example 3
-//        ModCommand invalid_1 = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("test", ModCommand.ArgType.STRING)
-//                        .then(new ModCommand("consume", ModCommand.ArgType.GREEDY)
-//                                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))));
-//        // Invalid example 4
-//        ModCommand invalid_1 = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("test", ModCommand.ArgType.STRING))
-//                .then(new ModCommand("consume", ModCommand.ArgType.GREEDY))
-//                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL));
-        // Valid example
-        ModCommand valid = new ModCommand(".greedy", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("test", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("consume", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL))
-                .then(new ModCommand("<x>", ModCommand.ArgType.LITERAL));
 
         // Add all commands
         register(track);
         register(untrack);
-        register(sethome);
-        register(greedy);
-        register(valid);
     }
 
     // Registers the command
