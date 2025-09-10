@@ -1,118 +1,113 @@
 package com.Counter.command;
 
-import com.Counter.CounterMod;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import java.util.HashMap;
+import java.util.Map;
 
 // Contains various helper functions for handling client-side commands
 public class CommandParser {
     // Use a period as the delimiter because a lot of other mods use "#" instead.
-    private static char DELIMITER = '.';
+    private static String DELIMITER = ".";
 
-    // Checks if the player's message is a command
-    public static boolean isCommand(String content) {
-        return content.charAt(0) == DELIMITER;
+    // Stores the command string that we'll parse
+    private String command;
+
+    // Stores any arguments we parsed
+    public Map<String, Object> parsedArgs;
+
+    public CommandParser(String command) {
+        this.command = command;
+        parsedArgs = new HashMap<>();
     }
 
-    // Parses the command (assumes this is a command that starts with the delimiter).
-    public static void parseCommand(String content) {
-        // Strip the delimiter from the beginning of the string
-        content = content.substring(1);
+    public boolean isCommand() {
+        return command != null && command.startsWith(DELIMITER);
+    }
 
-        // Parse the command
-        String[] arguments = content.split(" ");
+    // Checks if there's still an argument. This is used to check if the player typed
+    // another argument past a leaf ModCommand node, which would make this command invalid.
+    public boolean hasNext() {
+        String check = command.trim();
+        return check.length() > 0;
+    }
 
-        // Get the player to send messages to
-        ClientPlayerEntity player = MinecraftClient.getInstance().player;
-
-        // There must be at least one argument (should always be the case)
-        if (arguments.length == 0) {
-            invalidCommand(player);
-            return;
+    // Checks if the argument is of the correct type
+    public boolean parseArg(String arg, ModCommand.ArgType type, String argName) {
+        // Safety check, but this should not happen
+        if (arg == null || arg.isEmpty()) {
+            return false;
         }
 
-        // Cases for different commands
-        if (arguments[0].equals("track")) {
-            trackCommand(arguments, player);
+        // Different cases for each type
+        switch (type) {
+            case ModCommand.ArgType.STRING:
+                // The argument being passed is a string, so this is always true
+                parsedArgs.put(argName, arg);
+                return true;
+            case ModCommand.ArgType.INTEGER:
+                try {
+                    int intArg = Integer.parseInt(arg);
+                    parsedArgs.put(argName, intArg);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            case ModCommand.ArgType.DOUBLE:
+                try {
+                    double doubleArg = Double.parseDouble(arg);
+                    parsedArgs.put(argName, doubleArg);
+                    return true;
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            case ModCommand.ArgType.GREEDY:
+                parsedArgs.put(argName, arg);
+                return true;
+            case ModCommand.ArgType.LITERAL:
+                // Nothing to store because this is a literal. This check should
+                // have happened in the mixin, but still check just in case.
+                return arg.equals(argName);
+            default:
+                // Return false by default
+                return false;
         }
-        else if (arguments[0].equals("untrack")) {
-            untrackCommand(arguments, player);
+    }
+
+    // Parses the next argument and returns true if it's valid, false otherwise. Will
+    // also return false if it detects more than one space between each argument.
+    public boolean processNextArg(ModCommand.ArgType type, String argName) {
+        // Strip leading whitespaces before we proceed
+        int oldLength = command.length();
+        command = command.stripLeading();
+        int newLength = command.length();
+
+        // Vanilla commands don't allow more than one space between arguments
+        if (oldLength - newLength > 1) {
+            return false;
+        }
+
+        // Note: If this is a greedy argument, just parse the rest of the command
+        String arg;
+        if (type == ModCommand.ArgType.GREEDY) {
+            arg = command;
+            command = "";
+            return parseArg(arg, type, argName);
+        }
+
+        // How far should we extract?
+        int endIndex = command.indexOf(' ');    // Find the next space
+
+        // If no space was found, then return the rest of the argument
+        if (endIndex == -1) {
+            arg = command;
+            command = "";
         }
         else {
-            // Everything else is invalid
-            invalidCommand(player);
-        }
-    }
-
-    // Handles invalid commands
-    private static void invalidCommand(ClientPlayerEntity player) {
-        // Message the player telling them of the invalid command
-        MutableText message = Text.literal("Invalid command. Type .help for a list of commands.").styled(style -> style.withColor(Formatting.RED));
-        player.sendMessage(message, false);
-    }
-
-    // Handles the .track command
-    private static void trackCommand(String[] arguments, ClientPlayerEntity player) {
-        // The emote should only be one word
-        if (arguments.length != 2) {
-            MutableText message = Text.literal("There are too many arguments. The \"").styled(style -> style.withColor(Formatting.RED))
-                    .append(Text.literal(".track").styled(style -> style.withColor(Formatting.AQUA)))
-                    .append(Text.literal(".\" command only takes one argument.").styled(style -> style.withColor(Formatting.RED)));
-            player.sendMessage(message, false);
-
-            return;
+            // Otherwise, strip to the end index
+            arg = command.substring(0, endIndex);
+            command = command.substring(endIndex + 1);
         }
 
-        // Track the emote
-        String emote = arguments[1];
-        CounterMod.configManager.getConfig().emotes.add(emote);
-
-        // Emote did exist
-        MutableText message = Text.literal("Now tracking\"").styled(style -> style.withColor(Formatting.GREEN))
-                .append(Text.literal(emote).styled(style -> style.withColor(Formatting.AQUA)))
-                .append(Text.literal(".\"").styled(style -> style.withColor(Formatting.GREEN)));
-        player.sendMessage(message, false);
-
-        // Save to configuration
-        CounterMod.saveConfig();
-    }
-
-    // Handles the .untrack command
-    private static void untrackCommand(String[] arguments, ClientPlayerEntity player) {
-        // The emote should only be one word
-        if (arguments.length != 2) {
-            MutableText message = Text.literal("There are too many arguments. The \"").styled(style -> style.withColor(Formatting.RED))
-                    .append(Text.literal(".track").styled(style -> style.withColor(Formatting.AQUA)))
-                    .append(Text.literal(".\" command only takes one argument.").styled(style -> style.withColor(Formatting.RED)));
-            player.sendMessage(message, false);
-
-            return;
-        }
-
-        // Try to remove the emote
-        String emote = arguments[1];
-        CounterMod.configManager.getConfig().emotes.add(emote);
-
-        // Different cases depending on whether the emote is already being tracked.
-        if(CounterMod.configManager.getConfig().emotes.remove(emote)) {
-            // Emote did exist
-            MutableText message = Text.literal("No longer tracking\"").styled(style -> style.withColor(Formatting.GREEN))
-                    .append(Text.literal(emote).styled(style -> style.withColor(Formatting.AQUA)))
-                    .append(Text.literal(".\"").styled(style -> style.withColor(Formatting.GREEN)));
-            player.sendMessage(message, false);
-
-            // Save to configuration
-            CounterMod.saveConfig();
-        }
-        else {
-            // Emote didn't exist
-            MutableText message = Text.literal("\"").styled(style -> style.withColor(Formatting.RED))
-                    .append(Text.literal(emote).styled(style -> style.withColor(Formatting.AQUA)))
-                    .append(Text.literal("\" wasn't being tracked.").styled(style -> style.withColor(Formatting.RED)));
-            player.sendMessage(message, false);
-        }
+        // Parse the argument and return if this was successful
+        return parseArg(arg, type, argName);
     }
 }

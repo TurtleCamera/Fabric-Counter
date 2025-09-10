@@ -15,7 +15,7 @@ public class CounterMod implements ModInitializer {
     public static ConfigManager<CounterConfig> configManager;   // Config manager
 
     // Command registry
-    public static ModCommandRegistry modCommandRegistry;
+    public static ModCommandRegistry CommandRegistry;
 
 	@Override
 	public void onInitialize() {
@@ -25,7 +25,7 @@ public class CounterMod implements ModInitializer {
         configManager = new ConfigManager<>(CounterConfig.class, MOD_ID);
 
         // Create the command registry
-        modCommandRegistry = new ModCommandRegistry();
+        CommandRegistry = new ModCommandRegistry();
 
         // Load the config
         configManager.loadConfig();

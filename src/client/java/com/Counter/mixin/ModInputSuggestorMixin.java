@@ -54,7 +54,7 @@ public abstract class ModInputSuggestorMixin {
             Collection<String> suggestions = new ArrayList<>();
 
             // Loop through all the arguments
-            ArrayList<ModCommand> nodes = CounterMod.modCommandRegistry.COMMANDS;
+            ArrayList<ModCommand> nodes = CounterMod.CommandRegistry.COMMANDS;
             boolean cancelled = false;  // In the vanilla behavior, there are some edge cases where nothing is suggested
             while (true) {
                 // Does our current argument match any of the names of the current commands or is a greedy argument?
