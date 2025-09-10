@@ -29,13 +29,6 @@ public abstract class ModInputSuggestorMixin {
         String text = this.textField.getText();
         int cursor = this.textField.getCursor();
 
-//        // Error check: Going up the chat history can sometimes refresh with an
-//        //              empty text, so don't run any of the logic here.
-//        if (text == null || text.isEmpty()) {
-//            return;
-//        }
-//        System.out.println("text: " + text + " | length: " + text.length());
-
         // Make sure this is a mod command
         if (text.startsWith(".")) {
             // Edge case: Typing an extra space where you shouldn't should stop all suggestions
