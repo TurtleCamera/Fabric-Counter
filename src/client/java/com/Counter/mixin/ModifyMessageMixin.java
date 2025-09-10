@@ -40,6 +40,7 @@ public class ModifyMessageMixin {
             if (current == null || current.isEmpty()) {
                 invalidCommand();
                 ci.cancel();
+                return;
             }
 
             // Keep looping until we reach a leaf node. The leaf nodes are assumed
@@ -49,7 +50,7 @@ public class ModifyMessageMixin {
                 if (!parser.hasNext()) {
                     // Invalid command because we didn't get another argument
                     invalidCommand();
-                    ci.cancel();
+                    break;
                 }
 
                 // Check if this list of nodes is a list of literals or a single non-literal node
@@ -70,7 +71,7 @@ public class ModifyMessageMixin {
                     if (!parser.processNextArg(ModCommand.ArgType.LITERAL, "")) {
                         // If this failed, return the invalid command message
                         invalidCommand();
-                        ci.cancel();
+                        break;
                     }
 
                     // There's only one node we can match arguments for
@@ -82,7 +83,7 @@ public class ModifyMessageMixin {
                     if (!parser.processNextArg(type, argName)) {
                         // If this failed, return the invalid command message
                         invalidCommand();
-                        ci.cancel();
+                        break;
                     }
 
                     // The matched index should be stored by the parser at this point
@@ -95,14 +96,13 @@ public class ModifyMessageMixin {
                     // If we still have unparsed arguments, this command should fail.
                     if (parser.hasNext()) {
                         invalidCommand();
-                        ci.cancel();
+                        break;
                     }
 
                     // Otherwise, we can execute the command
                     Map<String, Object> parsedArgs = parser.parsedArgs;
                     CommandContext context = new CommandContext(parsedArgs);
                     selected.action.execute(context);
-
                     break;
                 }
 
