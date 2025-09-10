@@ -31,84 +31,86 @@ public class ModifyMessageMixin {
         // Create a command parser
         CommandParser parser = new CommandParser(content);
 
-        // Is this a command?
-        if (parser.isCommand()) {
-            // Get the ModCommand tree
-            ArrayList<ModCommand> current = CounterMod.CommandRegistry.COMMANDS;
+        // Run vanilla logic if this is not a command
+        if (!parser.isCommand()) {
+            return;
+        }
 
-            // If this is empty, just return the invalid command message.
-            if (current == null || current.isEmpty()) {
+        // Get the ModCommand tree
+        ArrayList<ModCommand> current = CounterMod.CommandRegistry.COMMANDS;
+
+        // If this is empty, just return the invalid command message.
+        if (current == null || current.isEmpty()) {
+            invalidCommand();
+            ci.cancel();
+            return;
+        }
+
+        // Keep looping until we reach a leaf node. The leaf nodes are assumed
+        // to not have children because of the validation checker.
+        while (true) {
+            // We expect another argument
+            if (!parser.hasNext()) {
+                // Invalid command because we didn't get another argument
                 invalidCommand();
-                ci.cancel();
-                return;
+                break;
             }
 
-            // Keep looping until we reach a leaf node. The leaf nodes are assumed
-            // to not have children because of the validation checker.
-            while (true) {
-                // We expect another argument
-                if (!parser.hasNext()) {
-                    // Invalid command because we didn't get another argument
+            // Check if this list of nodes is a list of literals or a single non-literal node
+            // Note: If a node is non-literal, it must be the only node in the list. If a node
+            //       in the list is literal, then all the nodes must be literal.
+            int nextNodeIndex;
+            if (current.get(0).type == ModCommand.ArgType.LITERAL) {
+                // This is (assumed) a list of LITERAL ModCommand nodes.
+                // Get the names of the literals.
+                String[] names = ModCommandRegistry.generateLiteralList(current);
+
+                // Set the list of literal names before using the parser
+                parser.setLiterals(names);
+
+                // Now, we can try parsing the next argument. We don't need to put
+                // anything for the argName because the list of literal names will
+                // be used instead.
+                if (!parser.processNextArg(ModCommand.ArgType.LITERAL, "")) {
+                    // If this failed, return the invalid command message
                     invalidCommand();
                     break;
                 }
 
-                // Check if this list of nodes is a list of literals or a single non-literal node
-                // Note: If a node is non-literal, it must be the only node in the list. If a node
-                //       in the list is literal, then all the nodes must be literal.
-                int nextNodeIndex;
-                if (current.get(0).type == ModCommand.ArgType.LITERAL) {
-                    // This is (assumed) a list of LITERAL ModCommand nodes.
-                    // Get the names of the literals.
-                    String[] names = ModCommandRegistry.generateLiteralList(current);
-
-                    // Set the list of literal names before using the parser
-                    parser.setLiterals(names);
-
-                    // Now, we can try parsing the next argument. We don't need to put
-                    // anything for the argName because the list of literal names will
-                    // be used instead.
-                    if (!parser.processNextArg(ModCommand.ArgType.LITERAL, "")) {
-                        // If this failed, return the invalid command message
-                        invalidCommand();
-                        break;
-                    }
-
-                    // There's only one node we can match arguments for
-                    nextNodeIndex = 0;
-                } else {
-                    // Non-literal types can be parsed immediately.
-                    ModCommand.ArgType type = current.get(0).type;
-                    String argName = current.get(0).name;
-                    if (!parser.processNextArg(type, argName)) {
-                        // If this failed, return the invalid command message
-                        invalidCommand();
-                        break;
-                    }
-
-                    // The matched index should be stored by the parser at this point
-                    nextNodeIndex = parser.literalIndex;
-                }
-
-                // Is the selected node a leaf?
-                ModCommand selected = current.get(nextNodeIndex);
-                if (selected.isLeaf()) {
-                    // If we still have unparsed arguments, this command should fail.
-                    if (parser.hasNext()) {
-                        invalidCommand();
-                        break;
-                    }
-
-                    // Otherwise, we can execute the command
-                    Map<String, Object> parsedArgs = parser.parsedArgs;
-                    CommandContext context = new CommandContext(parsedArgs);
-                    selected.action.execute(context);
+                // There's only one node we can match arguments for
+                nextNodeIndex = 0;
+            } else {
+                // Non-literal types can be parsed immediately.
+                ModCommand.ArgType type = current.get(0).type;
+                String argName = current.get(0).name;
+                if (!parser.processNextArg(type, argName)) {
+                    // If this failed, return the invalid command message
+                    invalidCommand();
                     break;
                 }
 
-                // If it's an internal node, then get the children and continue
-                current = selected.children;
+                // The matched index should be stored by the parser at this point
+                nextNodeIndex = parser.literalIndex;
             }
+
+            // Is the selected node a leaf?
+            ModCommand selected = current.get(nextNodeIndex);
+            if (selected.isLeaf()) {
+                // If we still have unparsed arguments, this command should fail.
+                if (parser.hasNext()) {
+                    invalidCommand();
+                    break;
+                }
+
+                // Otherwise, we can execute the command
+                Map<String, Object> parsedArgs = parser.parsedArgs;
+                CommandContext context = new CommandContext(parsedArgs);
+                selected.action.execute(context);
+                break;
+            }
+
+            // If it's an internal node, then get the children and continue
+            current = selected.children;
         }
 
         ci.cancel();
