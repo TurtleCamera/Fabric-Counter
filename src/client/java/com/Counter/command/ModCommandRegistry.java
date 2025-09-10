@@ -41,7 +41,7 @@ public class ModCommandRegistry {
                         .then(new ModCommand("<integer>", ModCommand.ArgType.INTEGER)
                         .executes(context -> {
                             String string = context.getString("<string>");
-                            String integer = context.getString("<integer>");
+                            int integer = context.getInteger("<integer>");
 
                             ClientPlayerEntity player =  MinecraftClient.getInstance().player;
                             MutableText message = Text.literal("Success! " + string + " " + integer);
@@ -140,7 +140,7 @@ public class ModCommandRegistry {
         String[] names =  new String[modCommands.size()];
 
         // Loop through all the ModCommand nodes
-        for (int i = 0; i <= modCommands.size(); i++) {
+        for (int i = 0; i < modCommands.size(); i++) {
             // Get the current node
             ModCommand node = modCommands.get(i);
 

@@ -55,7 +55,7 @@ public class ModifyMessageMixin {
                 // Check if this list of nodes is a list of literals or a single non-literal node
                 // Note: If a node is non-literal, it must be the only node in the list. If a node
                 //       in the list is literal, then all the nodes must be literal.
-                int nextNodeIndex = -1;
+                int nextNodeIndex;
                 if (current.get(0).type == ModCommand.ArgType.LITERAL) {
                     // This is (assumed) a list of LITERAL ModCommand nodes.
                     // Get the names of the literals.
@@ -102,13 +102,16 @@ public class ModifyMessageMixin {
                     Map<String, Object> parsedArgs = parser.parsedArgs;
                     CommandContext context = new CommandContext(parsedArgs);
                     selected.action.execute(context);
-                    ci.cancel();
+
+                    break;
                 }
 
                 // If it's an internal node, then get the children and continue
                 current = selected.children;
             }
         }
+
+        ci.cancel();
     }
 
     // Handles invalid commands
