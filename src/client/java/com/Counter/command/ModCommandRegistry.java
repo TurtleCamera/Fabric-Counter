@@ -1,5 +1,11 @@
 package com.Counter.command;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,35 +17,44 @@ public class ModCommandRegistry {
         // Initialize commands
         COMMANDS = new ArrayList<>();
 
-        // Create commands
-        // .track
-        ModCommand track = new ModCommand(".track", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
-        // .untrack
-        ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING)
-                .executes(context -> {
-                    String emote = context.getString("emote");
-                    for (int i = 0; i < 1000; i ++) {
-                        System.out.println(emote);
-                    }
-                }));
+//        // Create commands
+//        // .track
+//        ModCommand track = new ModCommand(".track", ModCommand.ArgType.LITERAL)
+//                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
+//        // .untrack
+//        ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
+//                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING)
+//                .executes(context -> {
+//                    String emote = context.getString("emote");
+//                    for (int i = 0; i < 1000; i ++) {
+//                        System.out.println(emote);
+//                    }
+//                }));
+//
+//        // Add all commands
+//        register(track);
+//        register(untrack);
 
-        // Add all commands
-        register(track);
-        register(untrack);
+        // Test example
+        ModCommand test = new ModCommand(".test", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("<string>", ModCommand.ArgType.STRING)
+                        .then(new ModCommand("<integer>", ModCommand.ArgType.INTEGER)
+                        .executes(context -> {
+                            String string = context.getString("<string>");
+                            String integer = context.getString("<integer>");
 
-        // Test
-        Map<String, Object> parsedArgs = new HashMap<>();
-        parsedArgs.put("emote", "TEST");
-        CommandContext context = new CommandContext(parsedArgs);
-        untrack.children.get(0).action.execute(context);
+                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+                            MutableText message = Text.literal("Success! " + string + " " + integer);
+                            player.sendMessage(message, false);
+                        })));
+        register(test);
     }
 
     // Registers the command
     private void register(ModCommand command) {
         // Make sure everything is valid before registering the command
         validateRoot(command);
+        validateLeaves(command);
         COMMANDS.add(command);
     }
 
@@ -67,6 +82,13 @@ public class ModCommandRegistry {
             }
 
             return;
+        }
+        else {
+            // If this is not a leaf node, then it shouldn't have an action
+            if (node.action != null) {
+                throw new IllegalArgumentException("Internal nodes cannot have an action: " +
+                        node.name + ".");
+            }
         }
 
         // Loop through all the children
@@ -109,5 +131,35 @@ public class ModCommandRegistry {
         }
 
         return suggestions;
+    }
+
+    // This function assumes that the list passed in contains only literal ModCommand nodes.
+    // It will return an array of strings consisting of the literal names
+    public static String[] generateLiteralList(ArrayList<ModCommand> modCommands) {
+        // Array containing the literal names
+        String[] names =  new String[modCommands.size()];
+
+        // Loop through all the ModCommand nodes
+        for (int i = 0; i <= modCommands.size(); i++) {
+            // Get the current node
+            ModCommand node = modCommands.get(i);
+
+            // This shouldn't happen, but print an error message to the player if we,
+            // for some reason, passed in a list of ModCommands that aren't literals.
+            if (!node.type.equals(ModCommand.ArgType.LITERAL)) {
+                ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+                MutableText message = Text.literal("An error occurred in the searchLiterals() " +
+                        "function because a list of ModCommands with non-literal argument " +
+                        "types was passed in. Please contact TurtleCamera about this issue.")
+                        .styled(style -> style.withColor(Formatting.RED));
+                player.sendMessage(message, false);
+
+                return null;
+            }
+
+            names[i] = node.name;
+        }
+
+        return names;
     }
 }

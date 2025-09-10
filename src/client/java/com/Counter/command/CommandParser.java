@@ -1,5 +1,11 @@
 package com.Counter.command;
 
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -13,6 +19,11 @@ public class CommandParser {
 
     // Stores any arguments we parsed
     public Map<String, Object> parsedArgs;
+
+    // This is used for LITERAL ArgTypes, meaning we need to search all
+    // command names to see if the argument matches any of them.
+    private String[] literals;
+    public int literalIndex = -1;
 
     public CommandParser(String command) {
         this.command = command;
@@ -31,7 +42,7 @@ public class CommandParser {
     }
 
     // Checks if the argument is of the correct type
-    public boolean parseArg(String arg, ModCommand.ArgType type, String argName) {
+    private boolean parseArg(String arg, ModCommand.ArgType type, String argName) {
         // Safety check, but this should not happen
         if (arg == null || arg.isEmpty()) {
             return false;
@@ -63,9 +74,27 @@ public class CommandParser {
                 parsedArgs.put(argName, arg);
                 return true;
             case ModCommand.ArgType.LITERAL:
-                // Nothing to store because this is a literal. This check should
-                // have happened in the mixin, but still check just in case.
-                return arg.equals(argName);
+                // If the list of literals is empty, then set the literalIndex to -1
+                if (literals == null) {
+                    literalIndex = -1;
+                    return false;
+                }
+
+                // Return true if the argument matches any of the literal names
+                for (int i = 0; i < literals.length; i++) {
+                    // Get the name of the literal
+                    String name = literals[i];
+
+                    // Does the argument match the node's name?
+                    if (arg.equals(name)) {
+                        literalIndex = i;
+                        return true;
+                    }
+                }
+
+                // Not found
+                literalIndex = -1;
+                return false;
             default:
                 // Return false by default
                 return false;
@@ -73,7 +102,9 @@ public class CommandParser {
     }
 
     // Parses the next argument and returns true if it's valid, false otherwise. Will
-    // also return false if it detects more than one space between each argument.
+    // also return false if it detects more than one space between each argument. The
+    // argName is ignored if the ArgType is LITERAL because we'll use the list of
+    // literal names instead.
     public boolean processNextArg(ModCommand.ArgType type, String argName) {
         // Strip leading whitespaces before we proceed
         int oldLength = command.length();
@@ -109,5 +140,11 @@ public class CommandParser {
 
         // Parse the argument and return if this was successful
         return parseArg(arg, type, argName);
+    }
+
+    // Sets the current list of literals. This is used if the current ArgType is LITERAL,
+    // meaning we need to search all command names to see if the argument matches any of them.
+    public void setLiterals(String[] literals) {
+        this.literals = literals;
     }
 }

@@ -58,7 +58,8 @@ public class ModCommand {
     }
 
     public boolean isLeaf() {
-        // All leaf nodes must have an action
+        // All leaf nodes must have an action. Don't check for an empty
+        // children list because an error will help me debug the issue.
         return action != null;
     }
 
