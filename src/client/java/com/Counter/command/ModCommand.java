@@ -57,6 +57,11 @@ public class ModCommand {
         return this;
     }
 
+    public boolean isLeaf() {
+        // All leaf nodes must have an action
+        return action != null;
+    }
+
     public ModCommand executes(CommandAction action) {
         if (children.size() > 0) {
             throw new IllegalArgumentException("Only leaf commands can have an action.");

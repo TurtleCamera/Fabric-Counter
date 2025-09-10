@@ -44,16 +44,34 @@ public class ModCommandRegistry {
     }
 
     // Checks if the root of the mod command is valid
-    private void validateRoot(ModCommand command) {
+    private void validateRoot(ModCommand root) {
         // Error checks for the root
-        if (command.type != ModCommand.ArgType.LITERAL) {
+        if (root.type != ModCommand.ArgType.LITERAL) {
             throw new IllegalArgumentException("Root commands must be LITERAL: " +
-                    command.name + ".");
+                    root.name + ".");
         }
 
-        if (!command.name.startsWith(".")) {
+        if (!root.name.startsWith(".")) {
             throw new IllegalArgumentException("Root commands must start with '.': " +
-                    command.name + ".");
+                    root.name + ".");
+        }
+    }
+
+    // Checks if all leaf nodes have actions
+    private void validateLeaves(ModCommand node) {
+        // If this is a leaf node, check if it has an action
+        if (node.children.isEmpty()) {
+            if (node.action == null) {
+                throw new IllegalArgumentException("Leaf nodes must have an action: " +
+                        node.name + ".");
+            }
+
+            return;
+        }
+
+        // Loop through all the children
+        for (ModCommand child : node.children) {
+            validateLeaves(child);
         }
     }
 
