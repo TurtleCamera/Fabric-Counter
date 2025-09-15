@@ -77,8 +77,8 @@ public class ModifyMessageMixin {
                     break;
                 }
 
-                // There's only one node we can match arguments for
-                nextNodeIndex = 0;
+                // The matched index should be stored by the parser at this point
+                nextNodeIndex = parser.literalIndex;
             } else {
                 // Non-literal types can be parsed immediately.
                 ModCommand.ArgType type = current.get(0).type;
@@ -89,8 +89,8 @@ public class ModifyMessageMixin {
                     break;
                 }
 
-                // The matched index should be stored by the parser at this point
-                nextNodeIndex = parser.literalIndex;
+                // There's only one node we can match arguments for
+                nextNodeIndex = 0;
             }
 
             // Is the selected node a leaf?
