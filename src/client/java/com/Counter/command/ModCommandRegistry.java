@@ -50,6 +50,7 @@ public class ModCommandRegistry {
         // .untrack
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                        .suggest(CounterMod.configManager.getConfig().phrases)
                         .executes(context -> {
                             // Get the phrase and try removing it
                             String phrase = context.getString("<phrase>");
@@ -221,9 +222,19 @@ public class ModCommandRegistry {
 
     // Given a list of mod commands, generate an ArrayList of command names as suggestions
     public static ArrayList<String> createSuggestions(ArrayList<ModCommand> modCommands) {
-        ArrayList<String> suggestions = new ArrayList<>();
-        for (ModCommand node : modCommands) {
-            suggestions.add(node.name);
+        ArrayList<String> suggestions;
+
+        // Some nodes have custom suggestions, so use those instead. Note: This assumes that
+        // the modCommands size is 1 if there's a non-literal child because only one child
+        // can exist for such a case
+        if (modCommands.get(0).customSuggestions != null) {
+            suggestions = modCommands.get(0).customSuggestions;
+        }
+        else {
+            suggestions = new ArrayList<>();
+            for (ModCommand node : modCommands) {
+                suggestions.add(node.name);
+            }
         }
 
         return suggestions;

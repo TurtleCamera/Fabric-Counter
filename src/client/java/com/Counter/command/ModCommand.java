@@ -15,6 +15,7 @@ public class ModCommand {
     public String name;     // Name for literal or placeholder for arguments
     public ArgType type;
     public ArrayList<ModCommand> children = new ArrayList<>();   // Stores child arguments
+    public ArrayList<String> customSuggestions; // If this isn't null, then the strings in this list will be used as suggestions
     public CommandAction action;    // Executable for the command
 
     public ModCommand(String name, ArgType type) {
@@ -57,17 +58,27 @@ public class ModCommand {
         return this;
     }
 
-    public boolean isLeaf() {
-        // All leaf nodes must have an action. Don't check for an empty
-        // children list because an error will help me debug the issue.
-        return action != null;
-    }
-
     public ModCommand executes(CommandAction action) {
         if (children.size() > 0) {
             throw new IllegalArgumentException("Only leaf commands can have an action.");
         }
         this.action = action;
         return this;
+    }
+
+    public ModCommand suggest(ArrayList<String> suggestions) {
+        // Can't use custom suggestions for LITERAL types
+        if (type ==  ArgType.LITERAL) {
+            throw new IllegalArgumentException("Cannot add custom suggestions for literal nodes.");
+        }
+
+        this.customSuggestions = suggestions;
+        return this;
+    }
+
+    public boolean isLeaf() {
+        // All leaf nodes must have an action. Don't check for an empty
+        // children list because an error will help me debug the issue.
+        return action != null;
     }
 }

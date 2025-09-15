@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
 @Mixin(ChatInputSuggestor.class)
-public abstract class ModInputSuggestorMixin {
+public abstract class ModifySuggestionsMixin {
     @Shadow @Nullable private CompletableFuture<?> pendingSuggestions;
     @Shadow private TextFieldWidget textField;
 
