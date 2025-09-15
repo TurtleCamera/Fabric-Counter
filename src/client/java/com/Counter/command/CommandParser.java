@@ -106,15 +106,12 @@ public class CommandParser {
     // argName is ignored if the ArgType is LITERAL because we'll use the list of
     // literal names instead.
     public boolean processNextArg(ModCommand.ArgType type, String argName) {
-        // Strip leading whitespaces before we proceed
-        int oldLength = command.length();
+        // Strip leading whitespaces before we proceed. Note: vanilla command
+        // parsing allows multiple spaces between arguments; however, the
+        // suggestor won't suggest anything. It would instead say invalid
+        // argument, even though you can still enter the command (assuming
+        // the arguments are correct).
         command = command.stripLeading();
-        int newLength = command.length();
-
-        // Vanilla commands don't allow more than one space between arguments
-        if (oldLength - newLength > 1) {
-            return false;
-        }
 
         // Note: If this is a greedy argument, just parse the rest of the command
         String arg;
