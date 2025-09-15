@@ -17,24 +17,6 @@ public class ModCommandRegistry {
         // Initialize commands
         COMMANDS = new ArrayList<>();
 
-//        // Create commands
-//        // .track
-//        ModCommand track = new ModCommand(".track", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING));
-//        // .untrack
-//        ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
-//                .then(new ModCommand("<emote>", ModCommand.ArgType.STRING)
-//                .executes(context -> {
-//                    String emote = context.getString("emote");
-//                    for (int i = 0; i < 1000; i ++) {
-//                        System.out.println(emote);
-//                    }
-//                }));
-//
-//        // Add all commands
-//        register(track);
-//        register(untrack);
-
         // Test example
         ModCommand test = new ModCommand(".test", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<string>", ModCommand.ArgType.STRING)
