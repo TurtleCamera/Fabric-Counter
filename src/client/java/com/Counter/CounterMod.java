@@ -27,8 +27,11 @@ public class CounterMod implements ModInitializer {
         // Create the command registry
         CommandRegistry = new ModCommandRegistry();
 
-        // Load the config
+        // Load the config and correct any errors
         configManager.loadConfig();
+        if(configManager.getConfig().checkErrors()) {
+            saveConfig();
+        }
 	}
 
 	public static void onShutdown() {

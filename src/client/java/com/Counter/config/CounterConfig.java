@@ -5,6 +5,8 @@ import com.Counter.utils.UUIDHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class CounterConfig {
     // Maps server IP to another hashmap that maps the emote string to the current count
@@ -22,8 +24,75 @@ public class CounterConfig {
     // The distance used for Levenshtein distance
     public int maxDistance = 2;    // Default is 2
 
+    // Used when initializing the mod. Will check for any invalid settings.
+    public boolean checkErrors() {
+        // Variable to track if we found an error
+        boolean hasErrors = false;
+
+        // Is the Levenshtein distance a valid value?
+        if (maxDistance <= 0) {
+            // Set it back to the default value
+            System.err.println("Error: Max Levenshtein distance was a negative value. Setting it back to the default value of 2.");
+            maxDistance = 2;
+            hasErrors = true;
+        }
+
+        // Is the append phrase untracked?
+        if (appendPhrase != null && !phrases.contains(appendPhrase)) {
+            // Set the append phrase to null
+            System.err.println("Error: The append phrase was untracked, so it has been removed.");
+            appendPhrase = null;
+            hasErrors = true;
+        }
+
+        // There should be no duplicate phrases tracked
+        Set<String> set = new LinkedHashSet<>(phrases);
+        int oldPhraseCount = phrases.size();
+        phrases.clear();
+        phrases.addAll(set);
+        int newPhraseCount = phrases.size();
+        if (oldPhraseCount != newPhraseCount) {
+            // Remove all duplicates
+            System.err.println("Error: There were duplicate tracked phrases. They have been removed.");
+            hasErrors = true;
+        }
+
+        // There shouldn't be any null or empty strings in phrases
+        if (phrases.remove(null)) {
+            // Remove all null and empty strings
+            System.err.println("Error: There was a null string in the tracked phrases. It has been removed.");
+            hasErrors = true;
+        }
+        if (phrases.remove("")) {
+            // Remove all null and empty strings
+            System.err.println("Error: There was an empty string in the tracked phrases. It has been removed.");
+            hasErrors = true;
+        }
+
+        // Are all the counters valid?
+        boolean hasInvalid = false;
+        // Loop through all servers (and the single player uuid if it exists)
+        for (String uuid : counters.keySet()) {
+            // Loop through all the counters for this server or single player
+            for (String phrase : counters.get(uuid).keySet()) {
+                // Is this an invalid counter?
+                if (counters.get(uuid).get(phrase) < 0) {
+                    // Note the invalid integer and fix it
+                    hasInvalid = true;
+                    hasErrors = true;
+                    counters.get(uuid).put(phrase, 0);
+                }
+            }
+        }
+        if (hasInvalid) {
+            System.err.println("Error: There were invalid counters stored. They have been set to 0.");
+        }
+
+        return hasErrors;
+    }
+
     // Given a phrase, update the counters in the config and perform error checks
-    public void performCountersErrorChecks(String phrase, boolean putPhrase) {
+    public void performCountersChecks(String phrase, boolean putPhrase) {
         // Get the UUID
         String uuid = UUIDHandler.getUUID();
 
