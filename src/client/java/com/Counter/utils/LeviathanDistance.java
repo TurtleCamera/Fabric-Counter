@@ -29,9 +29,9 @@ public class LeviathanDistance {
                     // 2. Insertion: dp[i][j-1] + 1
                     // 3. Substitution: dp[i-1][j-1] + cost
                     dp[i][j] = Math.min(
-                        Math.min(dp[i - 1][j] + 1,
-                                 dp[i][j - 1] + 1),
-                                 dp[i - 1][j - 1] + cost);
+                            Math.min(dp[i - 1][j] + 1,
+                                    dp[i][j - 1] + 1),
+                            dp[i - 1][j - 1] + cost);
                 }
             }
         }
@@ -60,18 +60,30 @@ public class LeviathanDistance {
 
             // If not corrected, try joining with the next word
             if (i < words.length - 1) {
-                String joined = cleaned + words[i + 1].replaceAll("\\p{Punct}", "").toLowerCase();
-                if (levenshteinDistance(joined, targetWord.toLowerCase()) <= maxDistance) {
-                    words[i] = targetWord;     // Replace with correct word
-                    words[i + 1] = "";         // Remove second part
-                    skip[i + 1] = true;        // Mark as skipped
+                String joinedCleaned = cleaned + words[i + 1].replaceAll("\\p{Punct}", "").toLowerCase();
+                if (levenshteinDistance(joinedCleaned, targetWord.toLowerCase()) <= maxDistance) {
+                    // Preserve punctuation from the second word
+                    String endPunct = "";
+                    String secondWord = words[i + 1];
+                    if (!secondWord.isEmpty() && secondWord.matches(".*\\p{Punct}$")) {
+                        endPunct = secondWord.substring(secondWord.length() - 1);
+                    }
+
+                    words[i] = targetWord + endPunct; // Replace with correct word + punctuation
+                    words[i + 1] = "";                 // Remove second part
+                    skip[i + 1] = true;                // Mark as skipped
                     continue;
                 }
             }
 
             // If the word is within maxDistance of targetWord, replace it
             if (levenshteinDistance(cleaned, targetWord.toLowerCase()) <= maxDistance) {
-                words[i] = targetWord;
+                // Preserve punctuation at the end of the original word
+                String endPunct = "";
+                if (!words[i].isEmpty() && words[i].matches(".*\\p{Punct}$")) {
+                    endPunct = words[i].substring(words[i].length() - 1);
+                }
+                words[i] = targetWord + endPunct;
             }
         }
 
@@ -86,12 +98,13 @@ public class LeviathanDistance {
                 String finalWord = word;
 
                 // Capitalize if at sentence start
-                if (word.equals(targetWord)) {
+                if (word.replaceAll("\\p{Punct}", "").equals(targetWord)) {
                     // Capitalize if it’s the first word in the sentence
                     boolean isSentenceStart = (prevWord == null) ||
                             prevWord.matches(".*[.!?]$");
                     if (isSentenceStart) {
-                        finalWord = targetWord.substring(0, 1).toUpperCase() + targetWord.substring(1);
+                        finalWord = targetWord.substring(0, 1).toUpperCase() + targetWord.substring(1)
+                                + word.substring(targetWord.length()); // Append any punctuation
                     }
                     fixedIndices.add(currentIndex); // Record index of correction
                 }
