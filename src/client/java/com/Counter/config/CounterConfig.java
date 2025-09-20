@@ -14,7 +14,7 @@ public class CounterConfig {
     public ArrayList<String> phrases = new ArrayList<>();
 
     // If this variable is not null, then this emote will be appended to the end of the sentence
-    public String appendEmote = null;
+    public String appendPhrase = null;
 
     // Enables or disables leviathan distance autocorrect
     public boolean enableAutocorrect = false;

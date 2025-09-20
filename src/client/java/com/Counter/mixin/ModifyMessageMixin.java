@@ -136,7 +136,9 @@ public class ModifyMessageMixin {
             // fixMisspellings function on the updated string every time. This is a personal mod after all.
 
             // For each tracked phrase, autocorrect and find the starting indices of each instance of the phrases.
-            for (String phrase: CounterMod.configManager.getConfig().phrases) {
+            boolean hasPhraseAtEnd = false; // Check if one of the tracked phrases appears at the end of the String content.
+            String uuid = UUIDHandler.getUUID();    // Get a unique identifier for the server the player is on
+            for (String phrase : CounterMod.configManager.getConfig().phrases) {
                 List<Integer> phraseIndices;
 
                 // Only autocorrect if the player enabled it
@@ -154,12 +156,19 @@ public class ModifyMessageMixin {
                     phraseIndices = Autocorrect.findPhraseIndices(content, phrase);
                 }
 
+                // Check if the last instance of this phrase appears at the end of the content.
+                // This check must happen before we append counters.
+                if (!phraseIndices.isEmpty()) {
+                    int endIndex = phraseIndices.get(phraseIndices.size() - 1) + phrase.length();
+                    String endContent = content.substring(endIndex);
+                    if (Autocorrect.isAllPunctuation(endContent)) {
+                        hasPhraseAtEnd = true;
+                    }
+                }
+
                 // Add the counters for the phrase
                 // Perform updates and error checks on the config's counters
                 CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, true);
-
-                // Get a unique identifier for the server the player is on
-                String uuid = UUIDHandler.getUUID();
 
                 // Update the counter for this phrase on this server
                 int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) + phraseIndices.size();
@@ -173,10 +182,45 @@ public class ModifyMessageMixin {
                     counter --;
                 }
                 content = builder.toString();
-
-                // Save to config
-                CounterMod.saveConfig();
             }
+
+            System.out.println("Test 1");
+            // Is no phrase at the end of the content
+            if (!hasPhraseAtEnd) {
+                // Does the player want to append a phrase?
+                String append = CounterMod.configManager.getConfig().appendPhrase;
+                System.out.println("Test 2");
+                if (append != null) {
+                    // Append this phrase to the end of the content
+                    int trailingPunctuationStart = Autocorrect.trailingPunctuationStart(content);
+
+                    System.out.println("Test 3");
+                    // Perform updates and error checks on the config's counters. This phrase should be in
+                    // the config, but just in case.
+                    CounterMod.configManager.getConfig().performCountersErrorChecks(append, true);
+
+                    // Increment the counter
+                    System.out.println("Test 4");
+                    int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(append) + 1;
+                    CounterMod.configManager.getConfig().counters.get(uuid).put(append, counter);
+
+                    // If there is no punctuation at the end, just append the phrase to the end
+                    append = ", " + append + " X" + counter;
+                    System.out.println("Test 5");
+                    if (trailingPunctuationStart == -1) {
+                        System.out.println("Test 6");
+                        content = content + append;
+                    }
+                    else {
+                        System.out.println("Test 7");
+                        // If there is trailing punctuation, insert before the start of the trailing punctuation
+                        content = content.substring(0, trailingPunctuationStart) + append + content.substring(trailingPunctuationStart);
+                    }
+                }
+            }
+
+            // Save to config
+            CounterMod.saveConfig();
 
             // Send the modified content
             Instant instant = Instant.now();

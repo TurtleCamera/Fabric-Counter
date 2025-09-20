@@ -224,12 +224,57 @@ public class ModCommandRegistry {
                             }
                         }));
 
+        // .append
+        ModCommand append = new ModCommand(".append", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                        .executes(context -> {
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                            // Get the phrase
+                            String phrase = context.getString("<phrase>");
+
+                            // Perform updates and error checks on the config's counters
+                            CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, false);
+
+                            // Different cases depending on the player's settings
+                            if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
+                                // If this phrase isn't being tracked, tell the player that it needs to be tracked
+                                // Tell the player what happened
+                                MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.RED))
+                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                .append(Text.literal("\" was not being tracked. You must track the phrase before you can append it.").styled(style -> style.withColor(Formatting.RED))));
+                                player.sendMessage(message, false);
+                            }
+                            else if(CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
+                                // If this phrase is already being appended, do nothing and tell the player
+                                MutableText message = Text.literal("Already appending the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                .append(Text.literal("\".").styled(style -> style.withColor(Formatting.GREEN))));
+                                player.sendMessage(message, false);
+                            }
+                            else {
+                                // Store this phrase for appending
+                                CounterMod.configManager.getConfig().appendPhrase = phrase;
+
+                                // Tell the player what happened
+                                MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                .append(Text.literal("\" will now be appended at the end of each sentence if possible.").styled(style -> style.withColor(Formatting.GREEN))));
+                                player.sendMessage(message, false);
+
+                                // Save the confix
+                                CounterMod.saveConfig();
+                            }
+                        }));
+
         // Register all commands
         register(track);
         register(untrack);
         register(list);
         register(autocorrect);
         register(reset);
+        register(append);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase
