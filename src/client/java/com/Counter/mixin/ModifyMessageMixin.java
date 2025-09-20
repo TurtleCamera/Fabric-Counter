@@ -69,13 +69,6 @@ public class ModifyMessageMixin {
             // Keep looping until we reach a leaf node. The leaf nodes are assumed
             // to not have children because of the validation checker.
             while (true) {
-//                // We expect another argument
-//                if (!parser.hasNext()) {
-//                    // Invalid command because we didn't get another argument
-//                    invalidCommand();
-//                    break;
-//                }
-
                 // Check if this list of nodes is a list of literals or a single non-literal node
                 // Note: If a node is non-literal, it must be the only node in the list. If a node
                 //       in the list is literal, then all the nodes must be literal.

@@ -240,13 +240,6 @@ public class ModCommandRegistry {
 
             return;
         }
-//        else {
-//            // If this is not a leaf node, then it shouldn't have an action
-//            if (node.action != null) {
-//                throw new IllegalArgumentException("Internal nodes cannot have an action: " +
-//                        node.name + ".");
-//            }
-//        }
 
         // Loop through all the children
         for (ModCommand child : node.children) {
