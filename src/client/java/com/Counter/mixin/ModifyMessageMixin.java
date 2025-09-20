@@ -8,17 +8,27 @@ import com.Counter.command.ModCommandRegistry;
 import com.Counter.config.ConfigManager;
 import com.Counter.config.CounterConfig;
 import com.Counter.utils.LeviathanDistance;
+import com.ibm.icu.impl.ICUCurrencyMetaInfo;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.network.encryption.NetworkEncryptionUtils;
+import net.minecraft.network.message.LastSeenMessagesCollector;
+import net.minecraft.network.message.MessageBody;
+import net.minecraft.network.message.MessageChain;
+import net.minecraft.network.message.MessageSignatureData;
+import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,6 +36,12 @@ import java.util.Map;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ModifyMessageMixin {
+    // Shadow private variables, so I can use them
+    @Shadow
+    private LastSeenMessagesCollector lastSeenMessagesCollector;
+    @Shadow
+    private MessageChain.Packer messagePacker;
+
     @Inject(
             method = "sendChatMessage",
             at = @At("HEAD"),
@@ -132,9 +148,23 @@ public class ModifyMessageMixin {
 
                 // TODO: Use the starting indices of the fixed phrases to append counters
                 List<Integer> fixedIndices = (List<Integer>) result.get("fixedIndices");
-
-                System.out.println(content + " | " + phrase + " | " + fixedIndices);
             }
+
+            // Send the modified content
+            Instant instant = Instant.now();
+            long l = NetworkEncryptionUtils.SecureRandomUtil.nextLong();
+            LastSeenMessagesCollector.LastSeenMessages lastSeenMessages = this.lastSeenMessagesCollector.collect();
+            MessageSignatureData messageSignatureData = this.messagePacker.pack(new MessageBody(content, instant, l, lastSeenMessages.lastSeen()));
+
+            MinecraftClient client = MinecraftClient.getInstance();
+            if(client.getNetworkHandler() != null) {
+                client.getNetworkHandler().sendPacket(
+                        new ChatMessageC2SPacket(content, instant, l, messageSignatureData, lastSeenMessages.update())
+                );
+            }
+
+            // Prevent sending two messages in chat
+            ci.cancel();
         }
     }
 
