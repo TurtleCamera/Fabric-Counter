@@ -75,12 +75,16 @@ public class Autocorrect {
         }
 
         // Step 2: Remove consecutive duplicate words (ignoring punctuation)
+        Pattern pattern = Pattern.compile("\\p{Punct}");
         List<String> cleanedWords = new ArrayList<>();
         String prevWordCleaned = null;
         for (String word : words) {
             if (!word.isEmpty()) {
                 String cleanedWord = word.replaceAll("\\p{Punct}", "").toLowerCase();
                 if (!cleanedWord.equals(prevWordCleaned)) {
+                    cleanedWords.add(word);
+                }
+                else if(pattern.matcher(word).find() || pattern.matcher(prevWordCleaned).find()) {
                     cleanedWords.add(word);
                 }
                 prevWordCleaned = cleanedWord;
