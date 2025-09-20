@@ -5,7 +5,7 @@ import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
 import com.Counter.command.ModCommandRegistry;
-import com.Counter.utils.LeviathanDistance;
+import com.Counter.utils.Autocorrect;
 import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -142,7 +142,7 @@ public class ModifyMessageMixin {
                 // Only autocorrect if the player enabled it
                 if(CounterMod.configManager.getConfig().enableAutocorrect) {
                     // Autocorrect misspellings in the message
-                    Map<String, Object> result = LeviathanDistance.fixMisspellings(content, phrase, 2);
+                    Map<String, Object> result = Autocorrect.fixMisspellings(content, phrase, 2);
 
                     // Update the content with the fixed phrases
                     content = (String) result.get("fixedText");
@@ -151,7 +151,7 @@ public class ModifyMessageMixin {
                     phraseIndices = (List<Integer>) result.get("fixedIndices");
                 }
                 else {
-                    phraseIndices = LeviathanDistance.findPhraseIndices(content, phrase);
+                    phraseIndices = Autocorrect.findPhraseIndices(content, phrase);
                 }
 
                 // Add the counters for the phrase
