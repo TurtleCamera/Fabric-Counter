@@ -1,10 +1,12 @@
+package com.Counter.utils;
+
 import java.util.*;
 
 public class LeviathanDistance {
     // Calculates the Levenshtein distance (edit distance) between two strings.
     // This measures how many single-character edits (insert, delete, substitute)
     // are needed to turn string 'a' into string 'b'.
-    public static int levenshteinDistance(String a, String b) {
+    private static int levenshteinDistance(String a, String b) {
         // Create a DP (dynamic programming) table with dimensions (a.length+1) x (b.length+1)
         int[][] dp = new int[a.length() + 1][b.length() + 1];
 
@@ -56,20 +58,20 @@ public class LeviathanDistance {
             // Remove punctuation and lowercase for comparison
             String cleaned = words[i].replaceAll("\\p{Punct}", "").toLowerCase();
 
-            // If the word is within maxDistance of targetWord, replace it
-            if (levenshteinDistance(cleaned, targetWord) <= maxDistance) {
-                words[i] = targetWord;
-                continue;
-            }
-
             // If not corrected, try joining with the next word
             if (i < words.length - 1) {
                 String joined = cleaned + words[i + 1].replaceAll("\\p{Punct}", "").toLowerCase();
-                if (levenshteinDistance(joined, targetWord) <= maxDistance) {
+                if (levenshteinDistance(joined, targetWord.toLowerCase()) <= maxDistance) {
                     words[i] = targetWord;     // Replace with correct word
                     words[i + 1] = "";         // Remove second part
                     skip[i + 1] = true;        // Mark as skipped
+                    continue;
                 }
+            }
+
+            // If the word is within maxDistance of targetWord, replace it
+            if (levenshteinDistance(cleaned, targetWord.toLowerCase()) <= maxDistance) {
+                words[i] = targetWord;
             }
         }
 
@@ -106,16 +108,5 @@ public class LeviathanDistance {
         resultMap.put("fixedIndices", fixedIndices);            // List of correction indices
 
         return resultMap;
-    }
-
-    public static void main(String[] args) {
-        String text = "I love aple and applle and ap ple. APPLE is great! Even appel.";
-        // String text = "l el. So much l el. Lel X2, he sux. Le ll. lell. lells. lellz. lellzz. lellzzz.";
-        Map<String, Object> result = fixMisspellings(text, "apple", 2);
-        String fixedText = (String) result.get("fixedText");
-        List<Integer> fixedIndices = (List<Integer>) result.get("fixedIndices");
-
-        System.out.println("Fixed text:\n" + fixedText);
-        System.out.println("Starting indices of fixed words: " + fixedIndices);
     }
 }
