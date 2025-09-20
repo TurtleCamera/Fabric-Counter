@@ -104,23 +104,44 @@ public class ModCommandRegistry {
         ModCommand autocorrect = new ModCommand(".autocorrect", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("enable", ModCommand.ArgType.LITERAL)
                         .executes(context -> {
-                            // Enable autocorrect
-                            CounterMod.configManager.getConfig().enableAutocorrect = true;
-
                             // An instance of the player, so we can send messages to them
-                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
-                            MutableText message = Text.literal("Autocorrect is now enabled.").styled(style -> style.withColor(Formatting.GREEN));
-                            player.sendMessage(message, false);
+                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                            if (!CounterMod.configManager.getConfig().enableAutocorrect) {
+                                // Enable autocorrect
+                                CounterMod.configManager.getConfig().enableAutocorrect = true;
+
+                                // An instance of the player, so we can send messages to them
+                                MutableText message = Text.literal("Autocorrect is now enabled.").styled(style -> style.withColor(Formatting.GREEN));
+                                player.sendMessage(message, false);
+
+                                // Save to config
+                                CounterMod.saveConfig();
+                            }
+                            else {
+                                MutableText message = Text.literal("Autocorrect is already enabled.").styled(style -> style.withColor(Formatting.GREEN));
+                                player.sendMessage(message, false);
+                            }
                         }))
                 .then(new ModCommand("disable", ModCommand.ArgType.LITERAL)
                         .executes(context -> {
-                            // Disable autocorrect
-                            CounterMod.configManager.getConfig().enableAutocorrect = false;
-
                             // An instance of the player, so we can send messages to them
-                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
-                            MutableText message = Text.literal("Autocorrect is now disabled.").styled(style -> style.withColor(Formatting.RED));
-                            player.sendMessage(message, false);
+                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                            if (CounterMod.configManager.getConfig().enableAutocorrect) {
+                                // Disable autocorrect
+                                CounterMod.configManager.getConfig().enableAutocorrect = false;
+
+                                MutableText message = Text.literal("Autocorrect is now disabled.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+
+                                // Save to config
+                                CounterMod.saveConfig();
+                            }
+                            else {
+                                MutableText message = Text.literal("Autocorrect is already disabled.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+                            }
                         }));
 
         // Register all commands

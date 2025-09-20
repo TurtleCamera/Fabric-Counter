@@ -12,15 +12,20 @@ import com.ibm.icu.impl.ICUCurrencyMetaInfo;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.message.LastSeenMessagesCollector;
 import net.minecraft.network.message.MessageBody;
 import net.minecraft.network.message.MessageChain;
 import net.minecraft.network.message.MessageSignatureData;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.world.WorldProperties;
+import net.minecraft.world.level.LevelProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,10 +34,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public class ModifyMessageMixin {
@@ -157,7 +159,56 @@ public class ModifyMessageMixin {
                     phraseIndices = LeviathanDistance.findPhraseIndices(content, phrase);
                 }
 
-                // TODO: Use the starting indices of the fixed phrases to append counters
+                // Add the counters for the phrase
+                // Get a unique identifier for the server the player is on
+                MinecraftClient client = MinecraftClient.getInstance();
+                String uuid;
+                if (client.isInSingleplayer() && client.getServer() != null) {
+                    // Use the same counter for all single player worlds
+                    uuid = "single_player";
+                }
+                else {
+                    // Use the server address (maybe consider the port)
+                    uuid = client.getCurrentServerEntry().address;
+                    uuid = uuid.split(":")[0];
+                }
+
+                // This should not happen, but check if there even is a hashmap of servers
+                if (CounterMod.configManager.getConfig().counters == null) {
+                    CounterMod.configManager.getConfig().counters = new HashMap<>();
+                }
+
+                // Are we already tracking this server (or single player)?
+                if (!CounterMod.configManager.getConfig().counters.containsKey(uuid)) {
+                    // If not, create a new hashmap to track counters
+                    CounterMod.configManager.getConfig().counters.put(uuid, new HashMap<>());
+                }
+
+                // Are we already tracking counters for this phrase on this server?
+                if (!CounterMod.configManager.getConfig().counters.get(uuid).containsKey(phrase)) {
+                    CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
+                }
+
+                // Should not happen, but if the counter is negative, set it to 0
+                if(CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) < 0) {
+                    CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
+                }
+
+                // Update the counter for this phrase on this server
+                int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) + phraseIndices.size();
+                CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, counter);
+
+                // Append the counter after each phrase backwards (the indices should already be sorted in ascending order)
+                StringBuilder builder = new StringBuilder(content);
+                for (int i = phraseIndices.size() - 1; i >= 0; i--) {
+                    int index = phraseIndices.get(i) + phrase.length();
+                    builder.insert(index, " X" + counter);
+                    counter --;
+                }
+                content = builder.toString();
+
+                // Save to config
+                CounterMod.saveConfig();
             }
 
             // Send the modified content
