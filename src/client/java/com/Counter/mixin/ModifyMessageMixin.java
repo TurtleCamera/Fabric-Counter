@@ -144,7 +144,7 @@ public class ModifyMessageMixin {
                 // Only autocorrect if the player enabled it
                 if(CounterMod.configManager.getConfig().enableAutocorrect) {
                     // Autocorrect misspellings in the message
-                    Map<String, Object> result = Autocorrect.fixMisspellings(content, phrase, 2);
+                    Map<String, Object> result = Autocorrect.fixMisspellings(content, phrase);
 
                     // Update the content with the fixed phrases
                     content = (String) result.get("fixedText");

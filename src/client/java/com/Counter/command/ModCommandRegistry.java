@@ -263,9 +263,43 @@ public class ModCommandRegistry {
                                                 .append(Text.literal("\" will now be appended at the end of each sentence if possible.").styled(style -> style.withColor(Formatting.GREEN))));
                                 player.sendMessage(message, false);
 
-                                // Save the confix
+                                // Save the config
                                 CounterMod.saveConfig();
                             }
+                        }));
+
+        // .distance
+        ModCommand distance = new ModCommand(".distance", ModCommand.ArgType.LITERAL)
+                .executes(context -> {
+                    // An instance of the player, so we can send messages to them
+                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                    // Get the distance and store it
+                    int maxDistance = CounterMod.configManager.getConfig().maxDistance;
+
+                    // Tell the player what happened
+                    MutableText message = Text.literal("The current Levenshtein distance for autocorrect is ").styled(style -> style.withColor(Formatting.GREEN))
+                            .append(Text.literal("" + maxDistance).styled(style -> style.withColor(Formatting.AQUA))
+                                    .append(Text.literal(".").styled(style -> style.withColor(Formatting.GREEN))));
+                    player.sendMessage(message, false);
+                })
+                .then(new ModCommand("<value>", ModCommand.ArgType.INTEGER)
+                        .executes(context -> {
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                            // Get the distance and store it
+                            int maxDistance = context.getInteger("<value>");
+                            CounterMod.configManager.getConfig().maxDistance = maxDistance;
+
+                            // Tell the player what happened
+                            MutableText message = Text.literal("The max Levenshtein distance has been set to ").styled(style -> style.withColor(Formatting.GREEN))
+                                    .append(Text.literal("" + maxDistance).styled(style -> style.withColor(Formatting.AQUA))
+                                            .append(Text.literal(" for autocorrect.").styled(style -> style.withColor(Formatting.GREEN))));
+                            player.sendMessage(message, false);
+
+                            // Save the config
+                            CounterMod.saveConfig();
                         }));
 
         // Register all commands
@@ -275,6 +309,7 @@ public class ModCommandRegistry {
         register(autocorrect);
         register(reset);
         register(append);
+        register(distance);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase

@@ -1,5 +1,7 @@
 package com.Counter.utils;
 
+import com.Counter.CounterMod;
+
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -44,7 +46,7 @@ public class Autocorrect {
         return dp[a.length()][b.length()];
     }
 
-    public static Map<String, Object> fixMisspellings(String text, String phrase, int maxDistance) {
+    public static Map<String, Object> fixMisspellings(String text, String phrase) {
         // First, close any gaps that appear among the phrases
         text = closePhrase(text, phrase);
 
@@ -52,6 +54,9 @@ public class Autocorrect {
 
         // Cleaned version of target phrase for comparison
         String cleanedPhrase = phrase.replaceAll("\\p{Punct}", "").toLowerCase();
+
+        // Max edit distance
+        int maxDistance = CounterMod.configManager.getConfig().maxDistance;
 
         // Step 1: Correct individual words
         for (int i = 0; i < words.length; i++) {

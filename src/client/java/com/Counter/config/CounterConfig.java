@@ -16,8 +16,11 @@ public class CounterConfig {
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendPhrase = null;
 
-    // Enables or disables leviathan distance autocorrect
+    // Enables or disables Levenshtein distance autocorrect
     public boolean enableAutocorrect = false;
+
+    // The distance used for Levenshtein distance
+    public int maxDistance = 2;    // Default is 2
 
     // Given a phrase, update the counters in the config and perform error checks
     public void performCountersErrorChecks(String phrase, boolean putPhrase) {
