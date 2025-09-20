@@ -5,34 +5,25 @@ import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
 import com.Counter.command.ModCommandRegistry;
-import com.Counter.config.ConfigManager;
-import com.Counter.config.CounterConfig;
 import com.Counter.utils.LeviathanDistance;
-import com.Counter.utils.UUIDGenerator;
-import com.ibm.icu.impl.ICUCurrencyMetaInfo;
+import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.encryption.NetworkEncryptionUtils;
 import net.minecraft.network.message.LastSeenMessagesCollector;
 import net.minecraft.network.message.MessageBody;
 import net.minecraft.network.message.MessageChain;
 import net.minecraft.network.message.MessageSignatureData;
 import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-import net.minecraft.world.WorldProperties;
-import net.minecraft.world.level.LevelProperties;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
 
 import java.time.Instant;
 import java.util.*;
@@ -164,29 +155,11 @@ public class ModifyMessageMixin {
                 }
 
                 // Add the counters for the phrase
+                // Perform updates and error checks on the config's counters
+                CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, true);
+
                 // Get a unique identifier for the server the player is on
-                String uuid = UUIDGenerator.generateUUID();
-
-                // This should not happen, but check if there even is a hashmap of servers
-                if (CounterMod.configManager.getConfig().counters == null) {
-                    CounterMod.configManager.getConfig().counters = new HashMap<>();
-                }
-
-                // Are we already tracking this server (or single player)?
-                if (!CounterMod.configManager.getConfig().counters.containsKey(uuid)) {
-                    // If not, create a new hashmap to track counters
-                    CounterMod.configManager.getConfig().counters.put(uuid, new HashMap<>());
-                }
-
-                // Are we already tracking counters for this phrase on this server?
-                if (!CounterMod.configManager.getConfig().counters.get(uuid).containsKey(phrase)) {
-                    CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
-                }
-
-                // Should not happen, but if the counter is negative, set it to 0
-                if(CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) < 0) {
-                    CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
-                }
+                String uuid = UUIDHandler.getUUID();
 
                 // Update the counter for this phrase on this server
                 int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) + phraseIndices.size();

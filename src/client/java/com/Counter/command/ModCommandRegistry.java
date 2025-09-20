@@ -1,6 +1,7 @@
 package com.Counter.command;
 
 import com.Counter.CounterMod;
+import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.MutableText;
@@ -26,6 +27,15 @@ public class ModCommandRegistry {
 
                             // An instance of the player, so we can send messages to them
                             ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+
+                            // Phrases must be at least 3 words long.
+                            if (phrase.length() < 3) {
+                                // Phrase was added
+                                MutableText message = Text.literal("Phrases must be at least 3 letters long.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+
+                                return;
+                            }
 
                             // Different messages depending on whether we're already tracking this phrase
                             if (isAdded) {
@@ -57,6 +67,15 @@ public class ModCommandRegistry {
 
                             // An instance of the player, so we can send messages to them
                             ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+
+                            // Phrases must be at least 3 words long.
+                            if (phrase.length() < 3) {
+                                // Phrase was added
+                                MutableText message = Text.literal("Phrases must be at least 3 letters long.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+
+                                return;
+                            }
 
                             // Different messages depending on whether we're already tracking this phrase
                             if (removedIndex != -1) {
@@ -160,11 +179,57 @@ public class ModCommandRegistry {
                             }
                         }));
 
+        // .reset
+        ModCommand reset = new ModCommand(".reset", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                        .executes(context -> {
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                            // Get the phrase
+                            String phrase = context.getString("<phrase>");
+
+                            // Phrases must be at least 3 words long.
+                            if (phrase.length() < 3) {
+                                // Phrase was added
+                                MutableText message = Text.literal("Phrases must be at least 3 letters long.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+
+                                return;
+                            }
+
+                            // Get the UUID of the current server (or single player)
+                            String uuid = UUIDHandler.getUUID();
+
+                            // Is this phrase being tracked?
+                            if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
+                                // Tell them that we aren't tracking this phrase, so there's nothing to reset.
+                                MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.RED))
+                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                        .append(Text.literal("\" was not being tracked.").styled(style -> style.withColor(Formatting.RED))));
+                                player.sendMessage(message, false);
+                            }
+                            else {
+                                // Perform updates and error checks on the config's counters
+                                CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, false);
+
+                                // This phrase is being tracked, so set the counter to 0
+                                CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
+
+                                // Tell the player what happened
+                                MutableText message = Text.literal("The counter for the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                .append(Text.literal("\" was reset on the current server.").styled(style -> style.withColor(Formatting.GREEN))));
+                                player.sendMessage(message, false);
+                            }
+                        }));
+
         // Register all commands
         register(track);
         register(untrack);
         register(list);
         register(autocorrect);
+        register(reset);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase

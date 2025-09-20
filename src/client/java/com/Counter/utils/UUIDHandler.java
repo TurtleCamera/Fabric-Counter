@@ -1,9 +1,13 @@
 package com.Counter.utils;
 
+import com.Counter.CounterMod;
 import net.minecraft.client.MinecraftClient;
 
-public class UUIDGenerator {
-    public static String generateUUID() {
+import java.util.HashMap;
+
+public class UUIDHandler {
+    // Gets the UUID of the server the player is on (or single player)
+    public static String getUUID() {
         MinecraftClient client = MinecraftClient.getInstance();
         String uuid;
         if (client.isInSingleplayer() && client.getServer() != null) {
