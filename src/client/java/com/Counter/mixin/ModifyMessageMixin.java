@@ -8,6 +8,7 @@ import com.Counter.command.ModCommandRegistry;
 import com.Counter.config.ConfigManager;
 import com.Counter.config.CounterConfig;
 import com.Counter.utils.LeviathanDistance;
+import com.Counter.utils.UUIDGenerator;
 import com.ibm.icu.impl.ICUCurrencyMetaInfo;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -164,17 +165,7 @@ public class ModifyMessageMixin {
 
                 // Add the counters for the phrase
                 // Get a unique identifier for the server the player is on
-                MinecraftClient client = MinecraftClient.getInstance();
-                String uuid;
-                if (client.isInSingleplayer() && client.getServer() != null) {
-                    // Use the same counter for all single player worlds
-                    uuid = "single_player";
-                }
-                else {
-                    // Use the server address (maybe consider the port)
-                    uuid = client.getCurrentServerEntry().address;
-                    uuid = uuid.split(":")[0];
-                }
+                String uuid = UUIDGenerator.generateUUID();
 
                 // This should not happen, but check if there even is a hashmap of servers
                 if (CounterMod.configManager.getConfig().counters == null) {
