@@ -69,12 +69,12 @@ public class ModifyMessageMixin {
             // Keep looping until we reach a leaf node. The leaf nodes are assumed
             // to not have children because of the validation checker.
             while (true) {
-                // We expect another argument
-                if (!parser.hasNext()) {
-                    // Invalid command because we didn't get another argument
-                    invalidCommand();
-                    break;
-                }
+//                // We expect another argument
+//                if (!parser.hasNext()) {
+//                    // Invalid command because we didn't get another argument
+//                    invalidCommand();
+//                    break;
+//                }
 
                 // Check if this list of nodes is a list of literals or a single non-literal node
                 // Note: If a node is non-literal, it must be the only node in the list. If a node
@@ -116,13 +116,23 @@ public class ModifyMessageMixin {
                 // Is the selected node a leaf?
                 ModCommand selected = current.get(nextNodeIndex);
                 if (selected.isLeaf()) {
-                    // If we still have unparsed arguments, this command should fail.
+                    // If we still have unparsed arguments, then this command should fail.
                     if (parser.hasNext()) {
                         invalidCommand();
                         break;
                     }
+                }
 
-                    // Otherwise, we can execute the command
+                // Do the arguments stop here?
+                if (!parser.hasNext()) {
+                    // Does this selected node have an executable?
+                    if (selected.action == null) {
+                        // Invalid command if it doesn't have one
+                        invalidCommand();
+                        break;
+                    }
+
+                    // We can execute the command
                     Map<String, Object> parsedArgs = parser.parsedArgs;
                     CommandContext context = new CommandContext(parsedArgs);
                     selected.action.execute(context);

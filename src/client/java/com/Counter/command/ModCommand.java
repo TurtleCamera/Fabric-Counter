@@ -48,26 +48,25 @@ public class ModCommand {
                     child.name + "' because a non-literal child already exists.");
         }
 
-        // Can't add children if this is a leaf node (has an action)
-        if (action != null) {
-            throw new IllegalArgumentException("Cannot add a child if this is a leaf node (has an action).");
-        }
+//        // Can't add children if this is a leaf node (has an action)
+//        if (action != null) {
+//            throw new IllegalArgumentException("Cannot add a child if this is a leaf node (has an action).");
+//        }
 
         children.add(child);
         return this;
     }
 
     public ModCommand executes(CommandAction action) {
-        if (children.size() > 0) {
-            throw new IllegalArgumentException("Only leaf commands can have an action.");
-        }
+//        if (children.size() > 0) {
+//            throw new IllegalArgumentException("Only leaf commands can have an action.");
+//        }
         this.action = action;
         return this;
     }
 
     public boolean isLeaf() {
-        // All leaf nodes must have an action. Don't check for an empty
-        // children list because an error will help me debug the issue.
-        return action != null;
+        // A node is a leaf if it has no children
+        return children.isEmpty();
     }
 }

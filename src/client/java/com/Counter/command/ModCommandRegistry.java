@@ -102,6 +102,22 @@ public class ModCommandRegistry {
 
         // .autocorrect
         ModCommand autocorrect = new ModCommand(".autocorrect", ModCommand.ArgType.LITERAL)
+                .executes(context -> {
+                    // An instance of the player, so we can send messages to them
+                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                    // Running this command without specifying an argument should tell the player
+                    // if autocorrect is enabled or disabled.
+                    if (CounterMod.configManager.getConfig().enableAutocorrect) {
+                        // An instance of the player, so we can send messages to them
+                        MutableText message = Text.literal("Autocorrect is currently enabled.").styled(style -> style.withColor(Formatting.GREEN));
+                        player.sendMessage(message, false);
+                    }
+                    else {
+                        MutableText message = Text.literal("Autocorrect is currently disabled.").styled(style -> style.withColor(Formatting.RED));
+                        player.sendMessage(message, false);
+                    }
+                })
                 .then(new ModCommand("enable", ModCommand.ArgType.LITERAL)
                         .executes(context -> {
                             // An instance of the player, so we can send messages to them
@@ -224,13 +240,13 @@ public class ModCommandRegistry {
 
             return;
         }
-        else {
-            // If this is not a leaf node, then it shouldn't have an action
-            if (node.action != null) {
-                throw new IllegalArgumentException("Internal nodes cannot have an action: " +
-                        node.name + ".");
-            }
-        }
+//        else {
+//            // If this is not a leaf node, then it shouldn't have an action
+//            if (node.action != null) {
+//                throw new IllegalArgumentException("Internal nodes cannot have an action: " +
+//                        node.name + ".");
+//            }
+//        }
 
         // Loop through all the children
         for (ModCommand child : node.children) {
