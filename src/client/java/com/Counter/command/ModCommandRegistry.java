@@ -222,7 +222,7 @@ public class ModCommandRegistry {
                             }
                             else {
                                 // Perform updates and error checks on the config's counters
-                                CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, false);
+                                CounterMod.configManager.getConfig().performCountersChecks(phrase, false);
 
                                 // This phrase is being tracked, so set the counter to 0
                                 CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
@@ -267,7 +267,7 @@ public class ModCommandRegistry {
                             String phrase = context.getString("<phrase>");
 
                             // Perform updates and error checks on the config's counters
-                            CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, false);
+                            CounterMod.configManager.getConfig().performCountersChecks(phrase, false);
 
                             // Different cases depending on the player's settings
                             if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
@@ -320,8 +320,19 @@ public class ModCommandRegistry {
                             // An instance of the player, so we can send messages to them
                             ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
-                            // Get the distance and store it
+                            // Get the distance
                             int maxDistance = context.getInteger("<value>");
+
+                            // Only store this distance if the value is non-negative
+                            if (maxDistance <= 0) {
+                                // Tell the player about the value issue and cancel this operation
+                                MutableText message = Text.literal("The max Levenshtein distance must be a non-negative value.").styled(style -> style.withColor(Formatting.RED));
+                                player.sendMessage(message, false);
+
+                                return;
+                            }
+
+                            // Set the new max Levenshtein distance
                             CounterMod.configManager.getConfig().maxDistance = maxDistance;
 
                             // Tell the player what happened

@@ -168,7 +168,7 @@ public class ModifyMessageMixin {
 
                 // Add the counters for the phrase
                 // Perform updates and error checks on the config's counters
-                CounterMod.configManager.getConfig().performCountersErrorChecks(phrase, true);
+                CounterMod.configManager.getConfig().performCountersChecks(phrase, true);
 
                 // Update the counter for this phrase on this server
                 int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) + phraseIndices.size();
@@ -194,7 +194,7 @@ public class ModifyMessageMixin {
 
                     // Perform updates and error checks on the config's counters. This phrase should be in
                     // the config, but just in case.
-                    CounterMod.configManager.getConfig().performCountersErrorChecks(append, true);
+                    CounterMod.configManager.getConfig().performCountersChecks(append, true);
 
                     // Increment the counter
                     int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(append) + 1;
