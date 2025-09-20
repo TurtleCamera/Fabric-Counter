@@ -85,6 +85,17 @@ public class ModCommandRegistry {
                                         .append(Text.literal("\".").styled(style -> style.withColor(Formatting.GREEN)));
                                 player.sendMessage(message, false);
 
+                                // If this phrase was being appended, it should be removed too.
+                                if (CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
+                                    // Stop appending this phrase
+                                    CounterMod.configManager.getConfig().appendPhrase = null;
+
+                                    // Tell the player what happened
+                                    message = Text.literal("This phrase will no longer be appended to the end of each sentence. " +
+                                            "You must track it again to continue appending.").styled(style -> style.withColor(Formatting.RED));
+                                    player.sendMessage(message, false);
+                                }
+
                                 // Save to configuration
                                 CounterMod.saveConfig();
                             }

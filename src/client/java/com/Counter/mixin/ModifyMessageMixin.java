@@ -184,35 +184,28 @@ public class ModifyMessageMixin {
                 content = builder.toString();
             }
 
-            System.out.println("Test 1");
             // Is no phrase at the end of the content
             if (!hasPhraseAtEnd) {
                 // Does the player want to append a phrase?
                 String append = CounterMod.configManager.getConfig().appendPhrase;
-                System.out.println("Test 2");
                 if (append != null) {
                     // Append this phrase to the end of the content
                     int trailingPunctuationStart = Autocorrect.trailingPunctuationStart(content);
 
-                    System.out.println("Test 3");
                     // Perform updates and error checks on the config's counters. This phrase should be in
                     // the config, but just in case.
                     CounterMod.configManager.getConfig().performCountersErrorChecks(append, true);
 
                     // Increment the counter
-                    System.out.println("Test 4");
                     int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(append) + 1;
                     CounterMod.configManager.getConfig().counters.get(uuid).put(append, counter);
 
                     // If there is no punctuation at the end, just append the phrase to the end
                     append = ", " + append + " X" + counter;
-                    System.out.println("Test 5");
                     if (trailingPunctuationStart == -1) {
-                        System.out.println("Test 6");
                         content = content + append;
                     }
                     else {
-                        System.out.println("Test 7");
                         // If there is trailing punctuation, insert before the start of the trailing punctuation
                         content = content.substring(0, trailingPunctuationStart) + append + content.substring(trailingPunctuationStart);
                     }
