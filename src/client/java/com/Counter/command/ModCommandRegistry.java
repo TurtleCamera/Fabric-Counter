@@ -100,10 +100,34 @@ public class ModCommandRegistry {
                     }
                 });
 
+        // .autocorrect
+        ModCommand autocorrect = new ModCommand(".autocorrect", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("enable", ModCommand.ArgType.LITERAL)
+                        .executes(context -> {
+                            // Enable autocorrect
+                            CounterMod.configManager.getConfig().enableAutocorrect = true;
+
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+                            MutableText message = Text.literal("Autocorrect is now enabled.").styled(style -> style.withColor(Formatting.GREEN));
+                            player.sendMessage(message, false);
+                        }))
+                .then(new ModCommand("disable", ModCommand.ArgType.LITERAL)
+                        .executes(context -> {
+                            // Disable autocorrect
+                            CounterMod.configManager.getConfig().enableAutocorrect = false;
+
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+                            MutableText message = Text.literal("Autocorrect is now disabled.").styled(style -> style.withColor(Formatting.RED));
+                            player.sendMessage(message, false);
+                        }));
+
         // Register all commands
         register(track);
         register(untrack);
         register(list);
+        register(autocorrect);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase

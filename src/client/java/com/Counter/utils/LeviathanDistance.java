@@ -122,4 +122,17 @@ public class LeviathanDistance {
 
         return resultMap;
     }
+
+    // Finds the starting indices of all instances of a phrase (this is used if autocorrect is turned off)
+    public static List<Integer> findPhraseIndices(String text, String targetWord) {
+        List<Integer> indices = new ArrayList<>();
+        int index = text.indexOf(targetWord);
+
+        while (index >= 0) {
+            indices.add(index);
+            index = text.indexOf(targetWord, index + 1);
+        }
+
+        return indices;
+    }
 }

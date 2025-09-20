@@ -13,6 +13,6 @@ public class CounterConfig {
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendEmote = null;
 
-    // Enables or disables all the features of this mod
-    public boolean enable = false;
+    // Enables or disables leviathan distance autocorrect
+    public boolean enableAutocorrect = false;
 }

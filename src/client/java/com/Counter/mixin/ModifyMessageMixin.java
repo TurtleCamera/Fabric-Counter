@@ -140,14 +140,24 @@ public class ModifyMessageMixin {
 
             // For each tracked phrase, autocorrect and find the starting indices of each instance of the phrases.
             for (String phrase: CounterMod.configManager.getConfig().phrases) {
-                // Autocorrect misspellings in the message
-                Map<String, Object> result = LeviathanDistance.fixMisspellings(content, phrase, 2);
+                List<Integer> phraseIndices;
 
-                // Update the content with the fixed phrases
-                content = (String) result.get("fixedText");
+                // Only autocorrect if the player enabled it
+                if(CounterMod.configManager.getConfig().enableAutocorrect) {
+                    // Autocorrect misspellings in the message
+                    Map<String, Object> result = LeviathanDistance.fixMisspellings(content, phrase, 2);
+
+                    // Update the content with the fixed phrases
+                    content = (String) result.get("fixedText");
+
+                    // Get the indices of the fixed phrases
+                    phraseIndices = (List<Integer>) result.get("fixedIndices");
+                }
+                else {
+                    phraseIndices = LeviathanDistance.findPhraseIndices(content, phrase);
+                }
 
                 // TODO: Use the starting indices of the fixed phrases to append counters
-                List<Integer> fixedIndices = (List<Integer>) result.get("fixedIndices");
             }
 
             // Send the modified content
