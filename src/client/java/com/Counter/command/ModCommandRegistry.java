@@ -226,6 +226,27 @@ public class ModCommandRegistry {
 
         // .append
         ModCommand append = new ModCommand(".append", ModCommand.ArgType.LITERAL)
+                .executes(context -> {
+                    // An instance of the player, so we can send messages to them
+                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                    // Get the current append phrase
+                    String phrase = CounterMod.configManager.getConfig().appendPhrase;
+
+                    // Is something being appended?
+                    if (phrase != null) {
+                        // Tell the player what they're currently appending
+                        MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                        .append(Text.literal("\" is being appended to the end of each sentence if possible.").styled(style -> style.withColor(Formatting.GREEN))));
+                        player.sendMessage(message, false);
+                    }
+                    else {
+                        // Tell the player that nothing is being appended
+                        MutableText message = Text.literal("No phrases are being appended to the end of each sentence.").styled(style -> style.withColor(Formatting.RED));
+                        player.sendMessage(message, false);
+                    }
+                })
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
                         .executes(context -> {
                             // An instance of the player, so we can send messages to them
