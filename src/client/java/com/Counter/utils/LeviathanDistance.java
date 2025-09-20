@@ -43,7 +43,7 @@ public class LeviathanDistance {
     // Corrects misspellings of a target word in a given text,
     // based on a maximum allowed Levenshtein distance.
     // Returns both the corrected text and the indices where corrections were applied.
-    public static Map<String, Object> fixMisspellings(String text, String targetWord, int maxDistance) {
+    public static Map<String, Object> fixMisspellings(String text, String phrase, int maxDistance) {
         // Split text into words (by whitespace)
         String[] words = text.split("\\s+");
         boolean[] skip = new boolean[words.length]; // Marks words that should be skipped (if merged)
@@ -61,7 +61,7 @@ public class LeviathanDistance {
             // If not corrected, try joining with the next word
             if (i < words.length - 1) {
                 String joinedCleaned = cleaned + words[i + 1].replaceAll("\\p{Punct}", "").toLowerCase();
-                if (levenshteinDistance(joinedCleaned, targetWord.toLowerCase()) <= maxDistance) {
+                if (levenshteinDistance(joinedCleaned, phrase.toLowerCase()) <= maxDistance) {
                     // Preserve punctuation from the second word
                     String endPunct = "";
                     String secondWord = words[i + 1];
@@ -69,21 +69,21 @@ public class LeviathanDistance {
                         endPunct = secondWord.substring(secondWord.length() - 1);
                     }
 
-                    words[i] = targetWord + endPunct; // Replace with correct word + punctuation
+                    words[i] = phrase + endPunct; // Replace with correct word + punctuation
                     words[i + 1] = "";                 // Remove second part
                     skip[i + 1] = true;                // Mark as skipped
                     continue;
                 }
             }
 
-            // If the word is within maxDistance of targetWord, replace it
-            if (levenshteinDistance(cleaned, targetWord.toLowerCase()) <= maxDistance) {
+            // If the word is within maxDistance of phrase, replace it
+            if (levenshteinDistance(cleaned, phrase.toLowerCase()) <= maxDistance) {
                 // Preserve punctuation at the end of the original word
                 String endPunct = "";
                 if (!words[i].isEmpty() && words[i].matches(".*\\p{Punct}$")) {
                     endPunct = words[i].substring(words[i].length() - 1);
                 }
-                words[i] = targetWord + endPunct;
+                words[i] = phrase + endPunct;
             }
         }
 
@@ -98,13 +98,13 @@ public class LeviathanDistance {
                 String finalWord = word;
 
                 // Capitalize if at sentence start
-                if (word.replaceAll("\\p{Punct}", "").equals(targetWord)) {
+                if (word.replaceAll("\\p{Punct}", "").equals(phrase)) {
                     // Capitalize if it’s the first word in the sentence
                     boolean isSentenceStart = (prevWord == null) ||
                             prevWord.matches(".*[.!?]$");
                     if (isSentenceStart) {
-                        finalWord = targetWord.substring(0, 1).toUpperCase() + targetWord.substring(1)
-                                + word.substring(targetWord.length()); // Append any punctuation
+                        finalWord = phrase.substring(0, 1).toUpperCase() + phrase.substring(1)
+                                + word.substring(phrase.length()); // Append any punctuation
                     }
                     fixedIndices.add(currentIndex); // Record index of correction
                 }
@@ -124,13 +124,13 @@ public class LeviathanDistance {
     }
 
     // Finds the starting indices of all instances of a phrase (this is used if autocorrect is turned off)
-    public static List<Integer> findPhraseIndices(String text, String targetWord) {
+    public static List<Integer> findPhraseIndices(String text, String phrase) {
         List<Integer> indices = new ArrayList<>();
-        int index = text.indexOf(targetWord);
+        int index = text.indexOf(phrase);
 
         while (index >= 0) {
             indices.add(index);
-            index = text.indexOf(targetWord, index + 1);
+            index = text.indexOf(phrase, index + 1);
         }
 
         return indices;
