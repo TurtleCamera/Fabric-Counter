@@ -220,10 +220,25 @@ public class ModCommandRegistry {
     }
 
     // Given a list of mod commands, generate an ArrayList of command names as suggestions
-    public static ArrayList<String> createSuggestions(ArrayList<ModCommand> modCommands) {
+    public static ArrayList<String> createSuggestions(ArrayList<ModCommand> modCommands, String prefix) {
         ArrayList<String> suggestions = new ArrayList<>();
+
+        // Handle null modCommands
+        if (modCommands == null) {
+            return suggestions;
+        }
+
+        // Normalize prefix (treat null as "")
+        if (prefix == null) {
+            prefix = "";
+        }
+
         for (ModCommand node : modCommands) {
-            suggestions.add(node.name);
+            if (node != null && node.name != null) {
+                if (node.name.startsWith(prefix)) {
+                    suggestions.add(node.name);
+                }
+            }
         }
 
         return suggestions;

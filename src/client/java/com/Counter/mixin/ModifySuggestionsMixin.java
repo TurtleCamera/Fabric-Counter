@@ -66,11 +66,16 @@ public abstract class ModifySuggestionsMixin {
                 // Does our current argument match any of the names of the current commands or is a greedy argument?
                 int index = ModCommandRegistry.findMatchIndex(nodes, currentArgument);
                 if (index <= -1) {
-                    // Suggest the current commands
-                    suggestions = ModCommandRegistry.createSuggestions(nodes);
+                    // Suggest the current commands that match with the prefix so far
+                    suggestions = ModCommandRegistry.createSuggestions(nodes, parts[argumentIndex]);
 
                     // Edge cases for cancelling the suggestions
-                    if (nodes.get(0).type == ModCommand.ArgType.GREEDY && parts[argumentIndex].length() > 0) {
+                    if (suggestions.isEmpty()) {
+                        // Don't suggest anything if the player mistyped a command (doesn't
+                        // apply if the player partially typed a command correctly).
+                        cancelled = true;
+                    }
+                    else if (nodes.get(0).type == ModCommand.ArgType.GREEDY && parts[argumentIndex].length() > 0) {
                         // If this is a greedy argument and the player typed something, don't suggest anything
                         cancelled = true;
                     }
@@ -97,7 +102,7 @@ public abstract class ModifySuggestionsMixin {
                     else {
                         // There's a space at the end, so suggest the next set of commands
                         nodes = nodes.get(index).children;
-                        suggestions = ModCommandRegistry.createSuggestions(nodes);
+                        suggestions = ModCommandRegistry.createSuggestions(nodes, "");  // Suggest all commands using no prefix
                         break;
                     }
                 }
