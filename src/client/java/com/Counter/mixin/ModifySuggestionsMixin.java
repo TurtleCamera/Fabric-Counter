@@ -79,6 +79,11 @@ public abstract class ModifySuggestionsMixin {
                         // If this is a greedy argument and the player typed something, don't suggest anything
                         cancelled = true;
                     }
+                    else if (nodes.get(0).type == ModCommand.ArgType.LITERAL && typed.endsWith(" ")) {
+                        // If this is a literal argument and the player typed a space afterward, don't suggest
+                        // anything even if the argument was typed partially correctly
+                        cancelled = true;
+                    }
 
                     break;
                 }
