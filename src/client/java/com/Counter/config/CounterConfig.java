@@ -1,6 +1,7 @@
 package com.Counter.config;
 
 import com.Counter.CounterMod;
+import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
 
 import java.util.ArrayList;
@@ -14,6 +15,9 @@ public class CounterConfig {
 
     // Keeps track of the phrases that we want to keep a counter for
     public ArrayList<String> phrases = new ArrayList<>();
+
+    // Keeps track of shortcuts
+    public ArrayList<Tuple<String, String>> shortcuts = new ArrayList<>();
 
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendPhrase = null;
@@ -45,6 +49,33 @@ public class CounterConfig {
             hasErrors = true;
         }
 
+        // Shortcuts shouldn't have any null elements
+        // TODO: Needs more checks
+        boolean hasInvalid = false;
+        for (int i = shortcuts.size() - 1; i >= 0; i--) {
+            Tuple<String, String> tuple = shortcuts.get(i);
+
+            // Cases that should be thrown out
+            if (tuple == null) {
+                // Is this tuple null?
+                hasInvalid = true;
+                shortcuts.remove(i);
+            }
+            else if (tuple.first() == null || tuple.second() == null) {
+                // Is either entry null?
+                hasInvalid = true;
+                shortcuts.remove(i);
+            }
+            else if (tuple.first().isEmpty() || tuple.second().isEmpty()) {
+                // Is either empty?
+                hasInvalid = true;
+                shortcuts.remove(i);
+            }
+        }
+        if (hasInvalid) {
+            System.err.println("Error: There were invalid shortcut entries. They have been removed.");
+        }
+
         // There should be no duplicate phrases tracked
         Set<String> set = new LinkedHashSet<>(phrases);
         int oldPhraseCount = phrases.size();
@@ -70,7 +101,7 @@ public class CounterConfig {
         }
 
         // Are all the counters valid?
-        boolean hasInvalid = false;
+        hasInvalid = false;
         // Loop through all servers (and the single player uuid if it exists)
         for (String uuid : counters.keySet()) {
             // Loop through all the counters for this server or single player

@@ -6,6 +6,7 @@ import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
 import com.Counter.command.ModCommandRegistry;
 import com.Counter.utils.Autocorrect;
+import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
@@ -134,6 +135,16 @@ public class ModifyMessageMixin {
             // This is not a command, so modify the phrases and counters based on the player's mod settings. I will
             // assume that the player (only me) is tracking reasonable phrases because I'll just be calling the
             // fixMisspellings function on the updated string every time. This is a personal mod after all.
+
+            // Replace all shortcuts with their corresponding phrases
+            for (Tuple<String, String> tuple : CounterMod.configManager.getConfig().shortcuts) {
+                // Get the phrase and its shortcut
+                String phrase = tuple.first();
+                String shortcut = tuple.second();
+
+                // Replace all candidate instances of the shortcut with the phrase
+                content = Autocorrect.replaceShortcut(content, phrase, shortcut);
+            }
 
             // For each tracked phrase, autocorrect and find the starting indices of each instance of the phrases.
             boolean hasPhraseAtEnd = false; // Check if one of the tracked phrases appears at the end of the String content.

@@ -1,6 +1,7 @@
 package com.Counter.command;
 
 import com.Counter.CounterMod;
+import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -86,7 +87,7 @@ public class ModCommandRegistry {
                                 player.sendMessage(message, false);
 
                                 // If this phrase was being appended, it should be removed too.
-                                if (CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
+                                if (CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
                                     // Stop appending this phrase
                                     CounterMod.configManager.getConfig().appendPhrase = null;
 
@@ -109,6 +110,7 @@ public class ModCommandRegistry {
                         }));
 
         // .list
+        // TODO: This should list the shortcuts too
         ModCommand list = new ModCommand(".list", ModCommand.ArgType.LITERAL)
                 .executes(context -> {
                     // An instance of the player, so we can send messages to them
@@ -345,6 +347,148 @@ public class ModCommandRegistry {
                             CounterMod.saveConfig();
                         }));
 
+        // .shortcut
+        ModCommand shortcut = new ModCommand(".shortcut", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("remove", ModCommand.ArgType.LITERAL)
+                        .then(new ModCommand("<shortcut>", ModCommand.ArgType.STRING)
+                                .executes(context -> {
+                                    // An instance of the player, so we can send messages to them
+                                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                                    // Get the shortcut
+                                    String phraseShortcut = context.getString("<shortcut>");
+
+                                    // Shortcuts can only contain letters and numbers
+                                    if (!phraseShortcut.matches("[a-zA-Z0-9]+")) {
+                                        // Regular message without the "it was previously..."
+                                        MutableText message = Text.literal("Shortcuts can only contain letters and numbers.").styled(style -> style.withColor(Formatting.RED));
+                                        player.sendMessage(message, false);
+
+                                        return;
+                                    }
+
+                                    // Remove the shortcut and phrase if it exists.
+                                    String removedPhrase = null;
+                                    for (int i = 0; i < CounterMod.configManager.getConfig().shortcuts.size(); i++) {
+                                        // Get the current tuple
+                                        Tuple<String, String> tuple = CounterMod.configManager.getConfig().shortcuts.get(i);
+
+                                        // Did we find the shortcut?
+                                        if (tuple.second().equals(phraseShortcut)) {
+                                            // Remove the shortcut
+                                            removedPhrase = CounterMod.configManager.getConfig().shortcuts.get(i).first();
+                                            CounterMod.configManager.getConfig().shortcuts.remove(i);
+
+                                            break;
+                                        }
+                                    }
+
+                                    // Different messages to the player depending on whether we found the shortcut
+                                    if (removedPhrase != null) {
+                                        // Regular message without the "it was previously..."
+                                        MutableText message = Text.literal("The shortcut \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                .append(Text.literal(phraseShortcut).styled(style -> style.withColor(Formatting.AQUA))
+                                                        .append(Text.literal("\" will no longer be replaced with the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                                .append(Text.literal(removedPhrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                                        .append(Text.literal(".\"").styled(style -> style.withColor(Formatting.GREEN))))));
+                                        player.sendMessage(message, false);
+
+                                        // Save the config
+                                        CounterMod.saveConfig();
+                                    }
+                                    else {
+                                        MutableText message = Text.literal("The shortcut \"").styled(style -> style.withColor(Formatting.RED))
+                                                .append(Text.literal(phraseShortcut).styled(style -> style.withColor(Formatting.AQUA))
+                                                        .append(Text.literal("\" was not being replaced by a phrase.").styled(style -> style.withColor(Formatting.RED))));
+                                        player.sendMessage(message, false);
+                                    }
+                                })))
+                .then(new ModCommand("add", ModCommand.ArgType.LITERAL)
+                        .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                                .then(new ModCommand("<shortcut>", ModCommand.ArgType.STRING)
+                                        .executes(context -> {
+                                            // An instance of the player, so we can send messages to them
+                                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                                            // Get the phrase and shortcut
+                                            String phrase = context.getString("<phrase>");
+                                            String phraseShortcut = context.getString("<shortcut>");
+
+                                            // Shortcuts can only contain letters and numbers
+                                            if (!phraseShortcut.matches("[a-zA-Z0-9]+")) {
+                                                // Regular message without the "it was previously..."
+                                                MutableText message = Text.literal("Shortcuts can only contain letters and numbers.").styled(style -> style.withColor(Formatting.RED));
+                                                player.sendMessage(message, false);
+
+                                                return;
+                                            }
+
+                                            // Are we already tracking this shortcut? If so, replace it.
+                                            String previousPhrase = null;
+                                            boolean samePhrase =  false;
+                                            for (int i = 0; i < CounterMod.configManager.getConfig().shortcuts.size(); i++) {
+                                                // Get the current tuple
+                                                Tuple<String, String> tuple = CounterMod.configManager.getConfig().shortcuts.get(i);
+
+                                                // If this shortcut already exists, we need to replace it
+                                                if (tuple.second().equals(phraseShortcut)) {
+                                                    // Get the index and previous phrase
+                                                    previousPhrase = tuple.first();
+
+                                                    // Was the phrase also the same?
+                                                    if (tuple.first().equals(phrase)) {
+                                                        samePhrase = true;
+                                                    }
+
+                                                    // Replace the phrase with the new one
+                                                    Tuple<String, String> newTuple = new Tuple<>(phrase, phraseShortcut);
+                                                    CounterMod.configManager.getConfig().shortcuts.set(i, newTuple);
+
+                                                    break;
+                                                }
+                                            }
+
+                                            if (previousPhrase != null) {
+                                                // Different messages depending on whether the phrase was also the same
+                                                if (samePhrase) {
+                                                    // Tell the player that they already replace the shortcut with the phrase
+                                                    MutableText message = Text.literal("The shortcut \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                            .append(Text.literal(phraseShortcut).styled(style -> style.withColor(Formatting.AQUA))
+                                                                    .append(Text.literal("\" was already being replaced with the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                                            .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                                                    .append(Text.literal("\".").styled(style -> style.withColor(Formatting.GREEN))))));
+                                                    player.sendMessage(message, false);
+                                                }
+                                                else {
+                                                    // Tell the player that we're replacing the phrase tied to the shortcut
+                                                    MutableText message = Text.literal("The shortcut \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                            .append(Text.literal(phraseShortcut).styled(style -> style.withColor(Formatting.AQUA))
+                                                                    .append(Text.literal("\" will now be replaced with the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                                            .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                                                    .append(Text.literal("\". It was previously replaced with the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                                                            .append(Text.literal(previousPhrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                                                                    .append(Text.literal(".\"").styled(style -> style.withColor(Formatting.GREEN))))))));
+                                                    player.sendMessage(message, false);
+                                                }
+                                            }
+                                            else {
+                                                // This shortcut wasn't already being stored, so we need to add it
+                                                Tuple<String, String> newTuple = new Tuple<>(phrase, phraseShortcut);
+                                                CounterMod.configManager.getConfig().shortcuts.add(newTuple);
+
+                                                // Let the player know that it was added
+                                                MutableText message = Text.literal("The shortcut \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                        .append(Text.literal(phraseShortcut).styled(style -> style.withColor(Formatting.AQUA))
+                                                                .append(Text.literal("\" will now be replaced with the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                                                .append(Text.literal("\".").styled(style -> style.withColor(Formatting.GREEN))))));
+                                                player.sendMessage(message, false);
+                                            }
+
+                                            // Save the config
+                                            CounterMod.saveConfig();
+                                        }))));
+
         // Register all commands
         register(track);
         register(untrack);
@@ -353,6 +497,7 @@ public class ModCommandRegistry {
         register(reset);
         register(append);
         register(distance);
+        register(shortcut);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase

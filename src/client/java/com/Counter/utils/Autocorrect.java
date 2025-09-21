@@ -3,12 +3,24 @@ package com.Counter.utils;
 import com.Counter.CounterMod;
 
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Autocorrect {
-     // Replaces all occurrences of a given phrase in the text where its letters
-     // may be separated by spaces, restoring it to the compact phrase.
-     // Example: "h e l l o" → "hello"
+    // Replaces all instances of the phrase with the shortcut if the characters
+    // surrounding the phrase are punctuation or spaces.
+    public static String replaceShortcut(String text, String phrase, String shortcut) {
+        // Regex: Match word boundary or punctuation, then the shortcut, then word boundary or punctuation again
+        String regex = "(?<=^|\\s|\\p{Punct})" + Pattern.quote(shortcut) + "(?=$|\\s|\\p{Punct})";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(text);
+
+        return matcher.replaceAll(phrase);
+    }
+
+    // Replaces all occurrences of a given phrase in the text where its letters
+    // may be separated by spaces, restoring it to the compact phrase.
+    // Example: "h e l l o" → "hello"
     public static String closePhrase(String text, String phrase) {
         // Build regex like: h\s*e\s*l\s*l\s*o
         StringBuilder regexBuilder = new StringBuilder();
