@@ -214,50 +214,63 @@ public class ModCommandRegistry {
                             }
                         }));
 
-        // .reset
-        ModCommand reset = new ModCommand(".reset", ModCommand.ArgType.LITERAL)
+        // .set
+        ModCommand set = new ModCommand(".set", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
-                        .executes(context -> {
-                            // An instance of the player, so we can send messages to them
-                            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+                        .then(new ModCommand("<count>", ModCommand.ArgType.INTEGER)
+                            .executes(context -> {
+                                // An instance of the player, so we can send messages to them
+                                ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
-                            // Get the phrase
-                            String phrase = context.getString("<phrase>");
+                                // Get the phrase and count
+                                String phrase = context.getString("<phrase>");
+                                int count = context.getInteger("<count>");
 
-                            // Phrases must be at least 3 words long.
-                            if (phrase.length() < 3) {
-                                // Phrase was added
-                                MutableText message = Text.literal("Phrases must be at least 3 letters long.").styled(style -> style.withColor(Formatting.RED));
-                                player.sendMessage(message, false);
+                                // Phrases must be at least 3 words long.
+                                if (phrase.length() < 3) {
+                                    // Invalid phrase
+                                    MutableText message = Text.literal("Phrases must be at least 3 letters long.").styled(style -> style.withColor(Formatting.RED));
+                                    player.sendMessage(message, false);
 
-                                return;
-                            }
+                                    return;
+                                }
 
-                            // Get the UUID of the current server (or single player)
-                            String uuid = UUIDHandler.getUUID();
+                                // Count must be at least 0
+                                if (count < 0) {
+                                    // Invalid count
+                                    MutableText message = Text.literal("The count must be at least 0.").styled(style -> style.withColor(Formatting.RED));
+                                    player.sendMessage(message, false);
 
-                            // Is this phrase being tracked?
-                            if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
-                                // Tell them that we aren't tracking this phrase, so there's nothing to reset.
-                                MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.RED))
-                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
-                                        .append(Text.literal("\" was not being tracked.").styled(style -> style.withColor(Formatting.RED))));
-                                player.sendMessage(message, false);
-                            }
-                            else {
-                                // Perform updates and error checks on the config's counters
-                                CounterMod.configManager.getConfig().performCountersChecks(phrase, false);
+                                    return;
+                                }
 
-                                // This phrase is being tracked, so set the counter to 0
-                                CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, 0);
+                                // Get the UUID of the current server (or single player)
+                                String uuid = UUIDHandler.getUUID();
 
-                                // Tell the player what happened
-                                MutableText message = Text.literal("The counter for the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
-                                        .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
-                                                .append(Text.literal("\" was reset on the current server.").styled(style -> style.withColor(Formatting.GREEN))));
-                                player.sendMessage(message, false);
-                            }
-                        }));
+                                // Is this phrase being tracked?
+                                if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
+                                    // Tell them that we aren't tracking this phrase, so there's nothing to reset.
+                                    MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.RED))
+                                            .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                            .append(Text.literal("\" was not being tracked.").styled(style -> style.withColor(Formatting.RED))));
+                                    player.sendMessage(message, false);
+                                }
+                                else {
+                                    // Perform updates and error checks on the config's counters
+                                    CounterMod.configManager.getConfig().performCountersChecks(phrase, false);
+
+                                    // This phrase is being tracked, so set the counter to what the player specified
+                                    CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, count);
+
+                                    // Tell the player what happened
+                                    MutableText message = Text.literal("Set the counter for the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                                            .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
+                                                    .append(Text.literal("\" to ").styled(style -> style.withColor(Formatting.GREEN))
+                                                            .append(Text.literal("" + count).styled(style -> style.withColor(Formatting.AQUA))
+                                                                    .append(Text.literal(".").styled(style -> style.withColor(Formatting.GREEN))))));
+                                    player.sendMessage(message, false);
+                                }
+                            })));
 
         // .append
         ModCommand append = new ModCommand(".append", ModCommand.ArgType.LITERAL)
@@ -511,15 +524,39 @@ public class ModCommandRegistry {
                                             CounterMod.saveConfig();
                                         }))));
 
+        // help
+        ModCommand help = new ModCommand(".help", ModCommand.ArgType.LITERAL)
+                .executes(context -> {
+                    ClientPlayerEntity player = MinecraftClient.getInstance().player;
+
+                    // Header
+                    player.sendMessage(Text.literal("§a======= Counter Mod Help ======="), false);
+
+                    // Condensed commands
+                    player.sendMessage(Text.literal("§b.track <phrase> §7- Starts counting the number of times the phrase is used for each server. The phrase must be at least 3 letters long."), false);
+                    player.sendMessage(Text.literal("§b.untrack <phrase> §7- Stops counting for the specified phrase. The phrase must be at least 3 letters long."), false);
+                    player.sendMessage(Text.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."), false);
+                    player.sendMessage(Text.literal("§b.autocorrect [enable/disable] §7- Enables or disables autocorrect for phrases. Autocorrect uses Levenshtein distance."), false);
+                    player.sendMessage(Text.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."), false);
+                    player.sendMessage(Text.literal("§b.append <phrase> §7- Appends the phrase to the end of each sentence if there isn't already one. Only tracked phrases can be appended."), false);
+                    player.sendMessage(Text.literal("§b.distance [value] §7- Show or set max Levenshtein distance for autocorrect."), false);
+                    player.sendMessage(Text.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."), false);
+                    player.sendMessage(Text.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."), false);
+
+                    // Footer
+                    player.sendMessage(Text.literal("§a=============================="), false);
+                });
+
         // Register all commands
         register(track);
         register(untrack);
         register(list);
         register(autocorrect);
-        register(reset);
+        register(set);
         register(append);
         register(distance);
         register(shortcut);
+        register(help);
     }
 
     // Helper function to add a phrase. It returns true if it successfully added the phrase
