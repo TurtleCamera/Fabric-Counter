@@ -110,27 +110,49 @@ public class ModCommandRegistry {
                         }));
 
         // .list
-        // TODO: This should list the shortcuts too
         ModCommand list = new ModCommand(".list", ModCommand.ArgType.LITERAL)
-                .executes(context -> {
-                    // An instance of the player, so we can send messages to them
-                    ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+                .then(new ModCommand("shortcut", ModCommand.ArgType.LITERAL)
+                    .executes(context -> {
+                        // An instance of the player, so we can send messages to them
+                        ClientPlayerEntity player =  MinecraftClient.getInstance().player;
 
-                    // If there are no tracked phrases, print a different message
-                    if (CounterMod.configManager.getConfig().phrases.isEmpty()) {
-                        MutableText message = Text.literal("There are no tracked phrases.").styled(style -> style.withColor(Formatting.GREEN));
-                        player.sendMessage(message, false);
-                    }
-                    else {
-                        // List all tracked phrases
-                        player.sendMessage(Text.literal("Listing all tracked phrases: ").styled(style -> style.withColor(Formatting.GREEN)), false);
-                        for (String phrase : CounterMod.configManager.getConfig().phrases) {
-                            MutableText message = Text.literal("- ").styled(style -> style.withColor(Formatting.GREEN))
-                                    .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA)));
+                        // If there are no tracked phrases, print a different message
+                        if (CounterMod.configManager.getConfig().shortcuts.isEmpty()) {
+                            MutableText message = Text.literal("There are no tracked shortcuts.").styled(style -> style.withColor(Formatting.GREEN));
                             player.sendMessage(message, false);
                         }
-                    }
-                });
+                        else {
+                            // List all tracked phrases
+                            player.sendMessage(Text.literal("Listing all tracked shortcuts: ").styled(style -> style.withColor(Formatting.GREEN)), false);
+                            for (Tuple<String, String> tuple : CounterMod.configManager.getConfig().shortcuts) {
+                                MutableText message = Text.literal("- ").styled(style -> style.withColor(Formatting.GREEN))
+                                        .append(Text.literal(tuple.second()).styled(style -> style.withColor(Formatting.AQUA))
+                                                .append(Text.literal(" -> ").styled(style -> style.withColor(Formatting.GREEN))
+                                                        .append(Text.literal(tuple.first()).styled(style -> style.withColor(Formatting.AQUA)))));
+                                player.sendMessage(message, false);
+                            }
+                        }
+                    }))
+                .then(new ModCommand("phrase", ModCommand.ArgType.LITERAL)
+                        .executes(context -> {
+                            // An instance of the player, so we can send messages to them
+                            ClientPlayerEntity player =  MinecraftClient.getInstance().player;
+
+                            // If there are no tracked phrases, print a different message
+                            if (CounterMod.configManager.getConfig().phrases.isEmpty()) {
+                                MutableText message = Text.literal("There are no tracked phrases.").styled(style -> style.withColor(Formatting.GREEN));
+                                player.sendMessage(message, false);
+                            }
+                            else {
+                                // List all tracked phrases
+                                player.sendMessage(Text.literal("Listing all tracked phrases: ").styled(style -> style.withColor(Formatting.GREEN)), false);
+                                for (String phrase : CounterMod.configManager.getConfig().phrases) {
+                                    MutableText message = Text.literal("- ").styled(style -> style.withColor(Formatting.GREEN))
+                                            .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA)));
+                                    player.sendMessage(message, false);
+                                }
+                            }
+                        }));
 
         // .autocorrect
         ModCommand autocorrect = new ModCommand(".autocorrect", ModCommand.ArgType.LITERAL)
