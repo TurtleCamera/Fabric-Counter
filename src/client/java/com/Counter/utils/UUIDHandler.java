@@ -1,9 +1,6 @@
 package com.Counter.utils;
 
-import com.Counter.CounterMod;
 import net.minecraft.client.MinecraftClient;
-
-import java.util.HashMap;
 
 public class UUIDHandler {
     // Gets the UUID of the server the player is on (or single player)
