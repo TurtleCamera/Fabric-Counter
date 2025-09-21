@@ -181,7 +181,7 @@ public class ModCommandRegistry {
                                 // Enable autocorrect
                                 CounterMod.configManager.getConfig().enableAutocorrect = true;
 
-                                // An instance of the player, so we can send messages to them
+                                // Tell the player that autocorrect was enabled
                                 MutableText message = Text.literal("Autocorrect is now enabled.").styled(style -> style.withColor(Formatting.GREEN));
                                 player.sendMessage(message, false);
 
@@ -202,6 +202,7 @@ public class ModCommandRegistry {
                                 // Disable autocorrect
                                 CounterMod.configManager.getConfig().enableAutocorrect = false;
 
+                                // Tell the player that autocorrect was disabled
                                 MutableText message = Text.literal("Autocorrect is now disabled.").styled(style -> style.withColor(Formatting.RED));
                                 player.sendMessage(message, false);
 
@@ -269,6 +270,9 @@ public class ModCommandRegistry {
                                                             .append(Text.literal("" + count).styled(style -> style.withColor(Formatting.AQUA))
                                                                     .append(Text.literal(".").styled(style -> style.withColor(Formatting.GREEN))))));
                                     player.sendMessage(message, false);
+
+                                    // Save the config
+                                    CounterMod.saveConfig();
                                 }
                             })));
 
@@ -281,16 +285,22 @@ public class ModCommandRegistry {
                     // Get the current append phrase
                     String phrase = CounterMod.configManager.getConfig().appendPhrase;
 
-                    // Is something being appended?
+                    // Stop appending the phrase if it exists
                     if (phrase != null) {
-                        // Tell the player what they're currently appending
-                        MutableText message = Text.literal("The phrase \"").styled(style -> style.withColor(Formatting.GREEN))
+                        // Tell the player that they removed the append phrase
+                        MutableText message = Text.literal("No longer appending the phrase \"").styled(style -> style.withColor(Formatting.GREEN))
                                 .append(Text.literal(phrase).styled(style -> style.withColor(Formatting.AQUA))
-                                        .append(Text.literal("\" is being appended to the end of each sentence if possible.").styled(style -> style.withColor(Formatting.GREEN))));
+                                        .append(Text.literal("\" to the end of each sentence.").styled(style -> style.withColor(Formatting.GREEN))));
                         player.sendMessage(message, false);
+
+                        // Remove the append phrase
+                        CounterMod.configManager.getConfig().appendPhrase = null;
+
+                        // Save the config
+                        CounterMod.saveConfig();
                     }
                     else {
-                        // Tell the player that nothing is being appended
+                        // Tell the player that nothing was being appended
                         MutableText message = Text.literal("No phrases are being appended to the end of each sentence.").styled(style -> style.withColor(Formatting.RED));
                         player.sendMessage(message, false);
                     }
@@ -538,7 +548,7 @@ public class ModCommandRegistry {
                     player.sendMessage(Text.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."), false);
                     player.sendMessage(Text.literal("§b.autocorrect [enable/disable] §7- Enables or disables autocorrect for phrases. Autocorrect uses Levenshtein distance."), false);
                     player.sendMessage(Text.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."), false);
-                    player.sendMessage(Text.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."), false);
+                    player.sendMessage(Text.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."), false);
                     player.sendMessage(Text.literal("§b.distance [value] §7- Show or set max Levenshtein distance for autocorrect."), false);
                     player.sendMessage(Text.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."), false);
                     player.sendMessage(Text.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."), false);
