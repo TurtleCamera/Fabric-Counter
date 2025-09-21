@@ -4,10 +4,7 @@ import com.Counter.CounterMod;
 import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.*;
 
 public class CounterConfig {
     // Maps server IP to another hashmap that maps the emote string to the current count
@@ -26,7 +23,7 @@ public class CounterConfig {
     public boolean enableAutocorrect = false;
 
     // The distance used for Levenshtein distance
-    public int maxDistance = 2;    // Default is 2
+    public int maxDistance = 1;    // Default is 1
 
     // Used when initializing the mod. Will check for any invalid settings.
     public boolean checkErrors() {
@@ -50,7 +47,6 @@ public class CounterConfig {
         }
 
         // Shortcuts shouldn't have any null elements
-        // TODO: Needs more checks
         boolean hasInvalid = false;
         for (int i = shortcuts.size() - 1; i >= 0; i--) {
             Tuple<String, String> tuple = shortcuts.get(i);
@@ -59,21 +55,44 @@ public class CounterConfig {
             if (tuple == null) {
                 // Is this tuple null?
                 hasInvalid = true;
+                hasErrors = true;
                 shortcuts.remove(i);
             }
             else if (tuple.first() == null || tuple.second() == null) {
                 // Is either entry null?
                 hasInvalid = true;
+                hasErrors = true;
                 shortcuts.remove(i);
             }
             else if (tuple.first().isEmpty() || tuple.second().isEmpty()) {
                 // Is either empty?
                 hasInvalid = true;
+                hasErrors = true;
                 shortcuts.remove(i);
             }
         }
         if (hasInvalid) {
             System.err.println("Error: There were invalid shortcut entries. They have been removed.");
+        }
+
+        // Shortcuts list also should have any duplicate shortcuts (duplicate phrases are fine)
+        Set<String> seen = new HashSet<>();
+        hasInvalid = false;
+        Iterator<Tuple<String, String>> iterator = shortcuts.iterator();
+        while(iterator.hasNext()) {
+            // Get the new tuple
+            Tuple<String, String> tuple = iterator.next();
+
+            // Are we already tracking this shortcut?
+            if (!seen.add(tuple.second())) {
+                // Remove this tuple
+                iterator.remove();
+                hasInvalid = true;
+                hasErrors = true;
+            }
+        }
+        if (hasInvalid) {
+            System.err.println("Error: There were duplicate shortcuts. Only the first shortcut in the list was kept.");
         }
 
         // There should be no duplicate phrases tracked
