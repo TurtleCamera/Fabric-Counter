@@ -538,7 +538,7 @@ public class ModCommandRegistry {
                     player.sendMessage(Text.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."), false);
                     player.sendMessage(Text.literal("§b.autocorrect [enable/disable] §7- Enables or disables autocorrect for phrases. Autocorrect uses Levenshtein distance."), false);
                     player.sendMessage(Text.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."), false);
-                    player.sendMessage(Text.literal("§b.append <phrase> §7- Appends the phrase to the end of each sentence. Only tracked phrases can be appended. This action is cancelled if there's already a phrase at the start or end of the sentence. It can also be cancelled if the sentence consists only of punctuation or is encased in parenthesis, brackets, or braces."), false);
+                    player.sendMessage(Text.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."), false);
                     player.sendMessage(Text.literal("§b.distance [value] §7- Show or set max Levenshtein distance for autocorrect."), false);
                     player.sendMessage(Text.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."), false);
                     player.sendMessage(Text.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."), false);
