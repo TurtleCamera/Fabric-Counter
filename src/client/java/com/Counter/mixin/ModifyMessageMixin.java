@@ -147,7 +147,7 @@ public class ModifyMessageMixin {
             }
 
             // For each tracked phrase, autocorrect and find the starting indices of each instance of the phrases.
-            boolean hasPhraseAtEnd = false; // Check if one of the tracked phrases appears at the end of the String content.
+            boolean cancelAppend = false; // There are some cases where the append phrase should be cancelled
             String uuid = UUIDHandler.getUUID();    // Get a unique identifier for the server the player is on
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
                 List<Integer> phraseIndices;
@@ -173,7 +173,7 @@ public class ModifyMessageMixin {
                     int endIndex = phraseIndices.get(phraseIndices.size() - 1) + phrase.length();
                     String endContent = content.substring(endIndex);
                     if (Autocorrect.isAllPunctuation(endContent)) {
-                        hasPhraseAtEnd = true;
+                        cancelAppend = true;
                     }
                 }
 
@@ -195,8 +195,28 @@ public class ModifyMessageMixin {
                 content = builder.toString();
             }
 
-            // Is no phrase at the end of the content
-            if (!hasPhraseAtEnd) {
+            // Should not append if the sentence is fully enclosed with parenthesis, brackets, or braces
+            if ((content.startsWith("(") && content.endsWith(")")) ||
+                    (content.startsWith("[") && content.endsWith("]")) ||
+                    (content.startsWith("{") && content.endsWith("}"))) {
+                cancelAppend = true;
+            }
+
+            // Should not append if the content consists only of punctuation
+            if (Autocorrect.isAllPunctuation(content)) {
+                cancelAppend = true;
+            }
+
+            // Should not append if the sentence starts with a phrase
+            for (String phrase : CounterMod.configManager.getConfig().phrases) {
+                if (content.startsWith(phrase)) {
+                    cancelAppend = true;
+                    break;
+                }
+            }
+
+            // Do we cancel the append phrase?
+            if (!cancelAppend) {
                 // Does the player want to append a phrase?
                 String append = CounterMod.configManager.getConfig().appendPhrase;
                 if (append != null) {
