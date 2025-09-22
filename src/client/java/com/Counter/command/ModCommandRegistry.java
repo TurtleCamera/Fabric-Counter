@@ -22,9 +22,8 @@ public class ModCommandRegistry {
         ModCommand track = new ModCommand(".track", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
                         .executes(context -> {
-                            // Try adding the phrase
+                            // Get the phrase
                             String phrase = context.getString("<phrase>");
-                            boolean isAdded = addIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
 
                             // An instance of the player, so we can send messages to them
                             ClientPlayerEntity player =  MinecraftClient.getInstance().player;
@@ -37,6 +36,9 @@ public class ModCommandRegistry {
 
                                 return;
                             }
+
+                            // Try adding it
+                            boolean isAdded = addIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
 
                             // Different messages depending on whether we're already tracking this phrase
                             if (isAdded) {
@@ -62,9 +64,8 @@ public class ModCommandRegistry {
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
                         .executes(context -> {
-                            // Get the phrase and try removing it
+                            // Get the phrase
                             String phrase = context.getString("<phrase>");
-                            int removedIndex = removeIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
 
                             // An instance of the player, so we can send messages to them
                             ClientPlayerEntity player =  MinecraftClient.getInstance().player;
@@ -77,6 +78,9 @@ public class ModCommandRegistry {
 
                                 return;
                             }
+
+                            // Try removing the phrase
+                            int removedIndex = removeIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
 
                             // Different messages depending on whether we're already tracking this phrase
                             if (removedIndex != -1) {
