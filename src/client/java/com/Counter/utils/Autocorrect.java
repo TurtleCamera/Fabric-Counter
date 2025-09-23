@@ -40,6 +40,10 @@ public class Autocorrect {
 
     // Calculates the Levenshtein distance (edit distance) between two strings
     private static int levenshteinDistance(String a, String b) {
+        // Case-insensitive
+        a = a.toLowerCase();
+        b = b.toLowerCase();
+
         int[][] dp = new int[a.length() + 1][b.length() + 1];
 
         for (int i = 0; i <= a.length(); i++) {
@@ -135,7 +139,6 @@ public class Autocorrect {
 
         return resultMap;
     }
-
 
     // Finds the starting indices of all instances of a phrase (this is used if autocorrect is turned off)
     public static List<Integer> findPhraseIndices(String text, String phrase) {
