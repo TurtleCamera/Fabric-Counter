@@ -209,7 +209,7 @@ public class ModifyMessageMixin {
 
             // Should not append if the sentence starts with a phrase
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
-                if (content.startsWith(phrase)) {
+                if (content.toLowerCase().startsWith(phrase.toLowerCase())) {
                     cancelAppend = true;
                     break;
                 }
