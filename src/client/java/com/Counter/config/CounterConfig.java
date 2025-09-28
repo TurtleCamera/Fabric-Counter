@@ -20,7 +20,7 @@ public class CounterConfig {
     public String appendPhrase = null;
 
     // Enables or disables Levenshtein distance autocorrect
-    public boolean enableAutocorrect = false;
+    public boolean enableAutocorrect = true;
 
     // The distance used for Levenshtein distance
     public int maxDistance = 1;    // Default is 1
