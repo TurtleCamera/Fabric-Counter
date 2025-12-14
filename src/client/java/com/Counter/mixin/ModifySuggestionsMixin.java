@@ -3,11 +3,13 @@ package com.Counter.mixin;
 import com.Counter.CounterMod;
 import com.Counter.command.ModCommand;
 import com.Counter.command.ModCommandRegistry;
+import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
-import net.minecraft.client.gui.screen.ChatInputSuggestor;
-import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.command.CommandSource;
+import net.minecraft.client.gui.components.CommandSuggestions;
+import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.commands.CommandSource;
 import org.jetbrains.annotations.Nullable;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,16 +20,21 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 
-@Mixin(ChatInputSuggestor.class)
+@Mixin(CommandSuggestions.class)
 public abstract class ModifySuggestionsMixin {
-    @Shadow @Nullable private CompletableFuture<?> pendingSuggestions;
-    @Shadow private TextFieldWidget textField;
+    @Shadow
+    @Nullable
+    private CompletableFuture<?> pendingSuggestions;
 
-    @Inject(method = "refresh", at = @At("HEAD"), cancellable = true)
-    private void refreshDotCommands(CallbackInfo ci) {
+    @Shadow
+    @Final
+    private EditBox input;
+
+    @Inject(method = "updateCommandInfo", at = @At("HEAD"), cancellable = true)
+    private void updateDotCommands(CallbackInfo ci) {
         // Get player text in the chat
-        String text = this.textField.getText();
-        int cursor = this.textField.getCursor();
+        String text = this.input.getValue();
+        int cursor = this.input.getCursorPosition();
 
         // Make sure this is a mod command
         if (text.startsWith(".")) {
@@ -114,13 +121,17 @@ public abstract class ModifySuggestionsMixin {
             }
 
             if (!cancelled) {
+                // Build suggestions manually
                 SuggestionsBuilder builder = new SuggestionsBuilder(typed, typed.lastIndexOf(' ') + 1);
-                this.pendingSuggestions = CommandSource.suggestMatching(suggestions, builder);
+                for (String suggestion : suggestions) {
+                    builder.suggest(suggestion);
+                }
+                this.pendingSuggestions = builder.buildFuture();
 
                 // Trigger display like vanilla does
                 this.pendingSuggestions.thenRun(() -> {
                     if (this.pendingSuggestions.isDone()) {
-                        ((ChatInputSuggestor) (Object) this).show(false);
+                        ((CommandSuggestions) (Object) this).showSuggestions(false);
                     }
                 });
 

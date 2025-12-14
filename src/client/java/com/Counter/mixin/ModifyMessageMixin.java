@@ -8,18 +8,13 @@ import com.Counter.command.ModCommandRegistry;
 import com.Counter.utils.Autocorrect;
 import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.network.encryption.NetworkEncryptionUtils;
-import net.minecraft.network.message.LastSeenMessagesCollector;
-import net.minecraft.network.message.MessageBody;
-import net.minecraft.network.message.MessageChain;
-import net.minecraft.network.message.MessageSignatureData;
-import net.minecraft.network.packet.c2s.play.ChatMessageC2SPacket;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.network.chat.*;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.protocol.game.ServerboundChatPacket;
+import net.minecraft.util.Crypt;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,16 +24,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.time.Instant;
 import java.util.*;
 
-@Mixin(ClientPlayNetworkHandler.class)
+@Mixin(ClientPacketListener.class)
 public class ModifyMessageMixin {
     // Shadow private variables, so I can use them
     @Shadow
-    private LastSeenMessagesCollector lastSeenMessagesCollector;
+    private LastSeenMessagesTracker lastSeenMessages;
     @Shadow
-    private MessageChain.Packer messagePacker;
+    private SignedMessageChain.Encoder signedMessageEncoder;
 
     @Inject(
-            method = "sendChatMessage",
+            method = "sendChat",
             at = @At("HEAD"),
             cancellable = true
     )
@@ -248,16 +243,12 @@ public class ModifyMessageMixin {
 
             // Send the modified content
             Instant instant = Instant.now();
-            long l = NetworkEncryptionUtils.SecureRandomUtil.nextLong();
-            LastSeenMessagesCollector.LastSeenMessages lastSeenMessages = this.lastSeenMessagesCollector.collect();
-            MessageSignatureData messageSignatureData = this.messagePacker.pack(new MessageBody(content, instant, l, lastSeenMessages.lastSeen()));
+            long l = Crypt.SaltSupplier.getLong();
+            LastSeenMessagesTracker.Update update = this.lastSeenMessages.generateAndApplyUpdate();
+            MessageSignature messageSignature = this.signedMessageEncoder.pack(new SignedMessageBody(content, instant, l, update.lastSeen()));
 
-            MinecraftClient client = MinecraftClient.getInstance();
-            if(client.getNetworkHandler() != null) {
-                client.getNetworkHandler().sendPacket(
-                        new ChatMessageC2SPacket(content, instant, l, messageSignatureData, lastSeenMessages.update())
-                );
-            }
+            ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
+            clientPacketListener.send(new ServerboundChatPacket(content, instant, l, messageSignature, update.update()));
 
             // Prevent sending two messages in chat
             ci.cancel();
@@ -266,9 +257,10 @@ public class ModifyMessageMixin {
 
     // Handles invalid commands
     private void invalidCommand() {
-        // Message the player telling them of the invalid command
-        ClientPlayerEntity player =  MinecraftClient.getInstance().player;
-        MutableText message = Text.literal("Invalid command. Type .help for a list of commands.").styled(style -> style.withColor(Formatting.RED));
-        player.sendMessage(message, false);
+        LocalPlayer player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.displayClientMessage(Component.literal("Invalid command. Type .help for a list of commands.")
+                            .withStyle(ChatFormatting.RED),false);
+        }
     }
 }
