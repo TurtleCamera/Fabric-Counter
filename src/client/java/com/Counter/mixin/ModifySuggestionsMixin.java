@@ -121,8 +121,12 @@ public abstract class ModifySuggestionsMixin {
             }
 
             if (!cancelled) {
+                // Build suggestions manually
                 SuggestionsBuilder builder = new SuggestionsBuilder(typed, typed.lastIndexOf(' ') + 1);
-                this.pendingSuggestions = suggestMatching(suggestions, builder);
+                for (String suggestion : suggestions) {
+                    builder.suggest(suggestion);
+                }
+                this.pendingSuggestions = builder.buildFuture();
 
                 // Trigger display like vanilla does
                 this.pendingSuggestions.thenRun(() -> {
@@ -135,13 +139,5 @@ public abstract class ModifySuggestionsMixin {
                 ci.cancel();
             }
         }
-    }
-
-    // Create my own private method for suggestions
-    private CompletableFuture<Suggestions> suggestMatching(Collection<String> matches, SuggestionsBuilder builder) {
-        for (String s : matches) {
-            builder.suggest(s);
-        }
-        return builder.buildFuture();
     }
 }
