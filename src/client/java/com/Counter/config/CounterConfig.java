@@ -19,24 +19,13 @@ public class CounterConfig {
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendPhrase = null;
 
-    // Enables or disables Levenshtein distance autocorrect
-    public boolean enableAutocorrect = true;
-
-    // The distance used for Levenshtein distance
-    public int maxDistance = 1;    // Default is 1
+    // Enables or disables counting
+    public boolean enable = true;
 
     // Used when initializing the mod. Will check for any invalid settings.
     public boolean checkErrors() {
         // Variable to track if we found an error
         boolean hasErrors = false;
-
-        // Is the Levenshtein distance a valid value?
-        if (maxDistance <= 0) {
-            // Set it back to the default value
-            System.err.println("Error: Max Levenshtein distance was a negative value. Setting it back to the default value of 2.");
-            maxDistance = 2;
-            hasErrors = true;
-        }
 
         // Is the append phrase untracked?
         if (appendPhrase != null && !phrases.contains(appendPhrase)) {
