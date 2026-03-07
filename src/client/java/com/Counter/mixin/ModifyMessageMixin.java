@@ -32,6 +32,9 @@ public class ModifyMessageMixin {
     @Shadow
     private SignedMessageChain.Encoder signedMessageEncoder;
 
+    // Maximum length per chat packet
+    final int MAX_CHAT_LENGTH = 256;
+
     @Inject(
             method = "sendChat",
             at = @At("HEAD"),
@@ -212,18 +215,23 @@ public class ModifyMessageMixin {
             // Save updated config
             CounterMod.saveConfig();
 
-            // Send the modified content
-            Instant instant = Instant.now();
-            long l = Crypt.SaltSupplier.getLong();
-            LastSeenMessagesTracker.Update update = this.lastSeenMessages.generateAndApplyUpdate();
-            MessageSignature messageSignature = this.signedMessageEncoder.pack(
-                    new SignedMessageBody(content, instant, l, update.lastSeen())
-            );
+            // Split content into chunks
+            for (int start = 0; start < content.length(); start += MAX_CHAT_LENGTH) {
+                int end = Math.min(start + MAX_CHAT_LENGTH, content.length());
+                String chunk = content.substring(start, end);
 
-            ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
-            clientPacketListener.send(
-                    new ServerboundChatPacket(content, instant, l, messageSignature, update.update())
-            );
+                Instant instantChunk = Instant.now();
+                long lChunk = Crypt.SaltSupplier.getLong();
+                LastSeenMessagesTracker.Update updateChunk = this.lastSeenMessages.generateAndApplyUpdate();
+                MessageSignature messageSignatureChunk = this.signedMessageEncoder.pack(
+                        new SignedMessageBody(chunk, instantChunk, lChunk, updateChunk.lastSeen())
+                );
+
+                ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
+                clientPacketListener.send(
+                        new ServerboundChatPacket(chunk, instantChunk, lChunk, messageSignatureChunk, updateChunk.update())
+                );
+            }
 
             // Cancel the original message send
             ci.cancel();

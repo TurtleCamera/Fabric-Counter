@@ -21,19 +21,25 @@ public class PhraseUtils {
         return matcher.replaceAll(Matcher.quoteReplacement(phrase));
     }
 
-    // Finds the starting indices of all instances of a phrase
+    // Finds starting indices of a phrase (case-insensitive, but not inside other words)
     public static List<Integer> findPhraseIndices(String text, String phrase) {
         List<Integer> indices = new ArrayList<>();
-        if (phrase == null || phrase.isEmpty()) return indices;
+        if (text == null || phrase == null || phrase.isEmpty()) return indices;
 
-        // Case-insensitive search
         String lowerText = text.toLowerCase();
         String lowerPhrase = phrase.toLowerCase();
-
+        int phraseLength = phrase.length();
         int index = 0;
+
         while ((index = lowerText.indexOf(lowerPhrase, index)) != -1) {
-            indices.add(index);
-            index += lowerPhrase.length(); // move past this match
+            boolean validStart = index == 0 || !Character.isLetter(lowerText.charAt(index - 1));
+            boolean validEnd = (index + phraseLength == lowerText.length()) || !Character.isLetter(lowerText.charAt(index + phraseLength));
+
+            if (validStart && validEnd) {
+                indices.add(index);
+            }
+
+            index += phraseLength;
         }
 
         return indices;
