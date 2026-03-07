@@ -604,7 +604,7 @@ public class ModCommandRegistry {
                 return -1;
             }
 
-            if (currentCommand.type == ModCommand.ArgType.LITERAL && currentCommand.name.equals(argument)) {
+            if (currentCommand.type == ModCommand.ArgType.LITERAL && currentCommand.name.equalsIgnoreCase(argument)) {
                 // Matches the literal
                 return i;
             }
