@@ -20,22 +20,13 @@ public class ModCommandRegistry {
 
         // .track
         ModCommand track = new ModCommand(".track", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                .then(new ModCommand("<phrase>", ModCommand.ArgType.GREEDY)
                         .executes(context -> {
                             // Get the phrase
                             String phrase = context.getString("<phrase>");
 
                             // An instance of the player, so we can send messages to them
                             LocalPlayer player =  Minecraft.getInstance().player;
-
-                            // Phrases must be at least 3 words long.
-                            if (phrase.length() < 3) {
-                                // Phrase was added
-                                MutableComponent message = Component.literal("Phrases must be at least 3 letters long.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                player.displayClientMessage(message, false);
-
-                                return;
-                            }
 
                             // Try adding it
                             boolean isAdded = addIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
@@ -62,22 +53,13 @@ public class ModCommandRegistry {
 
         // .untrack
         ModCommand untrack = new ModCommand(".untrack", ModCommand.ArgType.LITERAL)
-                .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
+                .then(new ModCommand("<phrase>", ModCommand.ArgType.GREEDY)
                         .executes(context -> {
                             // Get the phrase
                             String phrase = context.getString("<phrase>");
 
                             // An instance of the player, so we can send messages to them
                             LocalPlayer player =  Minecraft.getInstance().player;
-
-                            // Phrases must be at least 3 words long.
-                            if (phrase.length() < 3) {
-                                // Phrase was added
-                                MutableComponent message = Component.literal("Phrases must be at least 3 letters long.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                player.displayClientMessage(message, false);
-
-                                return;
-                            }
 
                             // Try removing the phrase
                             int removedIndex = removeIgnoreCase(CounterMod.configManager.getConfig().phrases, phrase);
@@ -159,62 +141,62 @@ public class ModCommandRegistry {
                         }));
 
         // .autocorrect
-        ModCommand autocorrect = new ModCommand(".autocorrect", ModCommand.ArgType.LITERAL)
+        ModCommand autocorrect = new ModCommand(".enable", ModCommand.ArgType.LITERAL)
                 .executes(context -> {
                     // An instance of the player, so we can send messages to them
                     LocalPlayer player = Minecraft.getInstance().player;
 
                     // Running this command without specifying an argument should tell the player
                     // if autocorrect is enabled or disabled.
-                    if (CounterMod.configManager.getConfig().enableAutocorrect) {
+                    if (CounterMod.configManager.getConfig().enable) {
                         // An instance of the player, so we can send messages to them
-                        MutableComponent message = Component.literal("Autocorrect is currently enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
+                        MutableComponent message = Component.literal("Automatic counting is currently enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
                         player.displayClientMessage(message, false);
                     }
                     else {
-                        MutableComponent message = Component.literal("Autocorrect is currently disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
+                        MutableComponent message = Component.literal("Automatic counting is currently disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
                         player.displayClientMessage(message, false);
                     }
                 })
-                .then(new ModCommand("enable", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("true", ModCommand.ArgType.LITERAL)
                         .executes(context -> {
                             // An instance of the player, so we can send messages to them
                             LocalPlayer player = Minecraft.getInstance().player;
 
-                            if (!CounterMod.configManager.getConfig().enableAutocorrect) {
+                            if (!CounterMod.configManager.getConfig().enable) {
                                 // Enable autocorrect
-                                CounterMod.configManager.getConfig().enableAutocorrect = true;
+                                CounterMod.configManager.getConfig().enable = true;
 
                                 // Tell the player that autocorrect was enabled
-                                MutableComponent message = Component.literal("Autocorrect is now enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
+                                MutableComponent message = Component.literal("Automatic counting is now enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
                                 player.displayClientMessage(message, false);
 
                                 // Save to config
                                 CounterMod.saveConfig();
                             }
                             else {
-                                MutableComponent message = Component.literal("Autocorrect is already enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
+                                MutableComponent message = Component.literal("Automatic counting is already enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
                                 player.displayClientMessage(message, false);
                             }
                         }))
-                .then(new ModCommand("disable", ModCommand.ArgType.LITERAL)
+                .then(new ModCommand("false", ModCommand.ArgType.LITERAL)
                         .executes(context -> {
                             // An instance of the player, so we can send messages to them
                             LocalPlayer player = Minecraft.getInstance().player;
 
-                            if (CounterMod.configManager.getConfig().enableAutocorrect) {
+                            if (CounterMod.configManager.getConfig().enable) {
                                 // Disable autocorrect
-                                CounterMod.configManager.getConfig().enableAutocorrect = false;
+                                CounterMod.configManager.getConfig().enable = false;
 
                                 // Tell the player that autocorrect was disabled
-                                MutableComponent message = Component.literal("Autocorrect is now disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
+                                MutableComponent message = Component.literal("Automatic counting is now disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
                                 player.displayClientMessage(message, false);
 
                                 // Save to config
                                 CounterMod.saveConfig();
                             }
                             else {
-                                MutableComponent message = Component.literal("Autocorrect is already disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
+                                MutableComponent message = Component.literal("Automatic counting is already disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
                                 player.displayClientMessage(message, false);
                             }
                         }));
@@ -349,51 +331,6 @@ public class ModCommandRegistry {
                                 // Save the config
                                 CounterMod.saveConfig();
                             }
-                        }));
-
-        // .distance
-        ModCommand distance = new ModCommand(".distance", ModCommand.ArgType.LITERAL)
-                .executes(context -> {
-                    // An instance of the player, so we can send messages to them
-                    LocalPlayer player = Minecraft.getInstance().player;
-
-                    // Get the distance and store it
-                    int maxDistance = CounterMod.configManager.getConfig().maxDistance;
-
-                    // Tell the player what happened
-                    MutableComponent message = Component.literal("The current Levenshtein distance for autocorrect is ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
-                            .append(Component.literal("" + maxDistance).withStyle(style -> style.withColor(ChatFormatting.AQUA))
-                                    .append(Component.literal(".").withStyle(style -> style.withColor(ChatFormatting.GREEN))));
-                    player.displayClientMessage(message, false);
-                })
-                .then(new ModCommand("<value>", ModCommand.ArgType.INTEGER)
-                        .executes(context -> {
-                            // An instance of the player, so we can send messages to them
-                            LocalPlayer player = Minecraft.getInstance().player;
-
-                            // Get the distance
-                            int maxDistance = context.getInteger("<value>");
-
-                            // Only store this distance if the value is non-negative
-                            if (maxDistance <= 0) {
-                                // Tell the player about the value issue and cancel this operation
-                                MutableComponent message = Component.literal("The max Levenshtein distance must be a non-negative value.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                player.displayClientMessage(message, false);
-
-                                return;
-                            }
-
-                            // Set the new max Levenshtein distance
-                            CounterMod.configManager.getConfig().maxDistance = maxDistance;
-
-                            // Tell the player what happened
-                            MutableComponent message = Component.literal("The max Levenshtein distance has been set to ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
-                                    .append(Component.literal("" + maxDistance).withStyle(style -> style.withColor(ChatFormatting.AQUA))
-                                            .append(Component.literal(" for autocorrect.").withStyle(style -> style.withColor(ChatFormatting.GREEN))));
-                            player.displayClientMessage(message, false);
-
-                            // Save the config
-                            CounterMod.saveConfig();
                         }));
 
         // .shortcut
@@ -550,10 +487,9 @@ public class ModCommandRegistry {
                     player.displayClientMessage(Component.literal("§b.track <phrase> §7- Starts counting the number of times the phrase is used for each server. The phrase must be at least 3 letters long."), false);
                     player.displayClientMessage(Component.literal("§b.untrack <phrase> §7- Stops counting for the specified phrase. The phrase must be at least 3 letters long."), false);
                     player.displayClientMessage(Component.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."), false);
-                    player.displayClientMessage(Component.literal("§b.autocorrect [enable/disable] §7- Enables or disables autocorrect for phrases. Autocorrect uses Levenshtein distance."), false);
+                    player.displayClientMessage(Component.literal("§b.enable [true/false] §7- Enables or disables autocorrect for phrases."), false);
                     player.displayClientMessage(Component.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."), false);
                     player.displayClientMessage(Component.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."), false);
-                    player.displayClientMessage(Component.literal("§b.distance <value> §7- Show or set max Levenshtein distance for autocorrect."), false);
                     player.displayClientMessage(Component.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."), false);
                     player.displayClientMessage(Component.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."), false);
 
@@ -568,7 +504,6 @@ public class ModCommandRegistry {
         register(autocorrect);
         register(set);
         register(append);
-        register(distance);
         register(shortcut);
         register(help);
     }

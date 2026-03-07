@@ -5,7 +5,7 @@ import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
 import com.Counter.command.ModCommandRegistry;
-import com.Counter.utils.Autocorrect;
+import com.Counter.utils.PhraseUtils;
 import com.Counter.utils.Tuple;
 import com.Counter.utils.UUIDHandler;
 import net.minecraft.client.Minecraft;
@@ -127,82 +127,63 @@ public class ModifyMessageMixin {
             ci.cancel();
         }
         else {
-            // This is not a command, so modify the phrases and counters based on the player's mod settings. I will
-            // assume that the player (only me) is tracking reasonable phrases because I'll just be calling the
-            // fixMisspellings function on the updated string every time. This is a personal mod after all.
+            // This is not a command. Only count phrases if enabled.
+            if(!CounterMod.configManager.getConfig().enable) {
+                return;
+            }
+
+            // modify the phrases and counters based on the player's mod settings.
+            String uuid = UUIDHandler.getUUID(); // Server or single-player UUID
 
             // Replace all shortcuts with their corresponding phrases
             for (Tuple<String, String> tuple : CounterMod.configManager.getConfig().shortcuts) {
-                // Get the phrase and its shortcut
                 String phrase = tuple.first();
                 String shortcut = tuple.second();
-
-                // Replace all candidate instances of the shortcut with the phrase
-                content = Autocorrect.replaceShortcut(content, phrase, shortcut);
+                content = PhraseUtils.replaceShortcut(content, phrase, shortcut);
             }
 
-            // For each tracked phrase, autocorrect and find the starting indices of each instance of the phrases.
-            boolean cancelAppend = false; // There are some cases where the append phrase should be cancelled
-            String uuid = UUIDHandler.getUUID();    // Get a unique identifier for the server the player is on
+            boolean cancelAppend = false; // Whether to skip the append phrase
+            Map<String, Integer> serverCounters = CounterMod.configManager.getConfig().counters.get(uuid);
+
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
-                List<Integer> phraseIndices;
+                // Find all exact occurrences of the phrase
+                List<Integer> phraseIndices = PhraseUtils.findPhraseIndices(content, phrase);
 
-                // Only autocorrect if the player enabled it
-                if(CounterMod.configManager.getConfig().enableAutocorrect) {
-                    // Autocorrect misspellings in the message
-                    Map<String, Object> result = Autocorrect.fixMisspellings(content, phrase);
-
-                    // Update the content with the fixed phrases
-                    content = (String) result.get("fixedText");
-
-                    // Get the indices of the fixed phrases
-                    phraseIndices = (List<Integer>) result.get("fixedIndices");
-                }
-                else {
-                    phraseIndices = Autocorrect.findPhraseIndices(content, phrase);
-                }
-
-                // Check if the last instance of this phrase appears at the end of the content.
-                // This check must happen before we append counters.
+                // Cancel append if the last phrase ends at the end of the content
                 if (!phraseIndices.isEmpty()) {
                     int endIndex = phraseIndices.get(phraseIndices.size() - 1) + phrase.length();
                     String endContent = content.substring(endIndex);
-                    if (Autocorrect.isAllPunctuation(endContent)) {
+                    if (PhraseUtils.isAllPunctuation(endContent)) {
                         cancelAppend = true;
                     }
                 }
 
-                // Add the counters for the phrase
-                // Perform updates and error checks on the config's counters
+                // Ensure server counters exist
                 CounterMod.configManager.getConfig().performCountersChecks(phrase, true);
 
-                // Update the counter for this phrase on this server
-                int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(phrase) + phraseIndices.size();
-                CounterMod.configManager.getConfig().counters.get(uuid).put(phrase, counter);
+                // Update counter for this phrase on this server
+                int counter = serverCounters.get(phrase) + phraseIndices.size();
+                serverCounters.put(phrase, counter);
 
-                // Append the counter after each phrase backwards (the indices should already be sorted in ascending order)
+                // Insert counters after each phrase (backwards to avoid index shift)
                 StringBuilder builder = new StringBuilder(content);
                 for (int i = phraseIndices.size() - 1; i >= 0; i--) {
                     int index = phraseIndices.get(i) + phrase.length();
                     builder.insert(index, " X" + counter);
-                    counter --;
+                    counter--;
                 }
                 content = builder.toString();
             }
 
-            // Should not append if the sentence is fully enclosed with parenthesis, brackets, or braces
+            // Skip append if sentence fully enclosed or all punctuation
             if ((content.startsWith("(") && content.endsWith(")")) ||
                     (content.startsWith("[") && content.endsWith("]")) ||
-                    (content.startsWith("{") && content.endsWith("}"))) {
+                    (content.startsWith("{") && content.endsWith("}")) ||
+                    PhraseUtils.isAllPunctuation(content)) {
                 cancelAppend = true;
             }
 
-            // Should not append if the content consists only of punctuation
-            if (Autocorrect.isAllPunctuation(content)) {
-                cancelAppend = true;
-            }
-
-            // Should not append if the sentence starts with a phrase
+            // Skip append if sentence starts with a tracked phrase
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
                 if (content.toLowerCase().startsWith(phrase.toLowerCase())) {
                     cancelAppend = true;
@@ -210,47 +191,41 @@ public class ModifyMessageMixin {
                 }
             }
 
-            // Do we cancel the append phrase?
+            // Append the player's append phrase if allowed
             if (!cancelAppend) {
-                // Does the player want to append a phrase?
                 String append = CounterMod.configManager.getConfig().appendPhrase;
                 if (append != null) {
-                    // Append this phrase to the end of the content
-                    int trailingPunctuationStart = Autocorrect.trailingPunctuationStart(content);
-
-                    // Perform updates and error checks on the config's counters. This phrase should be in
-                    // the config, but just in case.
                     CounterMod.configManager.getConfig().performCountersChecks(append, true);
+                    int counter = serverCounters.get(append) + 1;
+                    serverCounters.put(append, counter);
 
-                    // Increment the counter
-                    int counter = CounterMod.configManager.getConfig().counters.get(uuid).get(append) + 1;
-                    CounterMod.configManager.getConfig().counters.get(uuid).put(append, counter);
-
-                    // If there is no punctuation at the end, just append the phrase to the end
-                    append = ", " + append + " X" + counter;
-                    if (trailingPunctuationStart == -1) {
-                        content = content + append;
-                    }
-                    else {
-                        // If there is trailing punctuation, insert before the start of the trailing punctuation
-                        content = content.substring(0, trailingPunctuationStart) + append + content.substring(trailingPunctuationStart);
+                    String appendText = ", " + append + " X" + counter;
+                    int trailingIndex = PhraseUtils.trailingPunctuationStart(content);
+                    if (trailingIndex == -1) {
+                        content = content + appendText;
+                    } else {
+                        content = content.substring(0, trailingIndex) + appendText + content.substring(trailingIndex);
                     }
                 }
             }
 
-            // Save to config
+            // Save updated config
             CounterMod.saveConfig();
 
             // Send the modified content
             Instant instant = Instant.now();
             long l = Crypt.SaltSupplier.getLong();
             LastSeenMessagesTracker.Update update = this.lastSeenMessages.generateAndApplyUpdate();
-            MessageSignature messageSignature = this.signedMessageEncoder.pack(new SignedMessageBody(content, instant, l, update.lastSeen()));
+            MessageSignature messageSignature = this.signedMessageEncoder.pack(
+                    new SignedMessageBody(content, instant, l, update.lastSeen())
+            );
 
             ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
-            clientPacketListener.send(new ServerboundChatPacket(content, instant, l, messageSignature, update.update()));
+            clientPacketListener.send(
+                    new ServerboundChatPacket(content, instant, l, messageSignature, update.update())
+            );
 
-            // Prevent sending two messages in chat
+            // Cancel the original message send
             ci.cancel();
         }
     }
