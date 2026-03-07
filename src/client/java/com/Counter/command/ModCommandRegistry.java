@@ -140,8 +140,8 @@ public class ModCommandRegistry {
                             }
                         }));
 
-        // .autocorrect
-        ModCommand autocorrect = new ModCommand(".enable", ModCommand.ArgType.LITERAL)
+        // .enable
+        ModCommand enable = new ModCommand(".enable", ModCommand.ArgType.LITERAL)
                 .executes(context -> {
                     // An instance of the player, so we can send messages to them
                     LocalPlayer player = Minecraft.getInstance().player;
@@ -501,7 +501,7 @@ public class ModCommandRegistry {
         register(track);
         register(untrack);
         register(list);
-        register(autocorrect);
+        register(enable);
         register(set);
         register(append);
         register(shortcut);

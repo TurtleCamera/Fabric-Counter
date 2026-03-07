@@ -24,15 +24,11 @@ public class PhraseUtils {
     // Finds the starting indices of all instances of a phrase (this is used if autocorrect is turned off)
     public static List<Integer> findPhraseIndices(String text, String phrase) {
         List<Integer> indices = new ArrayList<>();
-        if (text == null || phrase == null || phrase.isEmpty()) return indices;
+        Pattern pattern = Pattern.compile("\\b" + Pattern.quote(phrase) + "\\b", Pattern.CASE_INSENSITIVE);
+        Matcher matcher = pattern.matcher(text);
 
-        String lowerText = text.toLowerCase();
-        String lowerPhrase = phrase.toLowerCase();
-        int index = lowerText.indexOf(lowerPhrase);
-
-        while (index >= 0) {
-            indices.add(index);
-            index = lowerText.indexOf(lowerPhrase, index + 1);
+        while (matcher.find()) {
+            indices.add(matcher.start());
         }
 
         return indices;
