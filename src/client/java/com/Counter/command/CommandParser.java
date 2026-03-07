@@ -80,7 +80,7 @@ public class CommandParser {
                     String name = literals[i];
 
                     // Does the argument match the node's name?
-                    if (arg.equals(name)) {
+                    if (arg.equalsIgnoreCase(name)) {
                         literalIndex = i;
                         return true;
                     }
