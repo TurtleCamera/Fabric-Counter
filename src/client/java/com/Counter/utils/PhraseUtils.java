@@ -21,14 +21,19 @@ public class PhraseUtils {
         return matcher.replaceAll(Matcher.quoteReplacement(phrase));
     }
 
-    // Finds the starting indices of all instances of a phrase (this is used if autocorrect is turned off)
+    // Finds the starting indices of all instances of a phrase
     public static List<Integer> findPhraseIndices(String text, String phrase) {
         List<Integer> indices = new ArrayList<>();
-        Pattern pattern = Pattern.compile("\\b" + Pattern.quote(phrase) + "\\b", Pattern.CASE_INSENSITIVE);
-        Matcher matcher = pattern.matcher(text);
+        if (phrase == null || phrase.isEmpty()) return indices;
 
-        while (matcher.find()) {
-            indices.add(matcher.start());
+        // Case-insensitive search
+        String lowerText = text.toLowerCase();
+        String lowerPhrase = phrase.toLowerCase();
+
+        int index = 0;
+        while ((index = lowerText.indexOf(lowerPhrase, index)) != -1) {
+            indices.add(index);
+            index += lowerPhrase.length(); // move past this match
         }
 
         return indices;
