@@ -34,9 +34,8 @@ Lists the currently tracked phrases or shortcuts.
 
 ---
 
-### `.autocorrect [enable/disable]`
-Enables or disables autocorrect for phrases.
-- Autocorrect uses **Levenshtein distance** to match similar phrases.
+### `.enable [true/false]`
+Enables or disables automatic counting for phrases.
 
 ---
 
@@ -58,11 +57,6 @@ Appends a tracked phrase to the end of each sentence.
 
 ---
 
-### `.distance <value>`
-Shows or sets the maximum Levenshtein distance used for autocorrect.
-
----
-
 ### `.shortcut add <phrase> <shortcut>`
 Adds a shortcut for a phrase.
 - Shortcuts will be replaced with their corresponding phrase.
@@ -80,5 +74,5 @@ Removes a shortcut.
 .track RIP
 .set :thumbsup: 10
 .append :thumbsup:
-.autocorrect enable
+.enable true
 .shortcut add :thumbsup: tu
