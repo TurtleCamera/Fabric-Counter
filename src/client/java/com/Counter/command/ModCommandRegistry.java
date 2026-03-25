@@ -37,7 +37,7 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("Now tracking the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA)))
                                         .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
 
                                 // Save to configuration
                                 CounterMod.saveConfig();
@@ -47,7 +47,7 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("Already tracking the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA)))
                                         .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                         }));
 
@@ -70,7 +70,7 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("No longer tracking the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA)))
                                         .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
 
                                 // If this phrase was being appended, it should be removed too.
                                 if (CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
@@ -80,7 +80,7 @@ public class ModCommandRegistry {
                                     // Tell the player what happened
                                     message = Component.literal("This phrase will no longer be appended to the end of each sentence. " +
                                             "You must track it again to continue appending.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
                                 }
 
                                 // Save to configuration
@@ -91,7 +91,7 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("The phrase \"").withStyle(style -> style.withColor(ChatFormatting.RED))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA)))
                                         .append(Component.literal("\" was not being tracked.").withStyle(style -> style.withColor(ChatFormatting.RED)));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                         }));
 
@@ -105,17 +105,17 @@ public class ModCommandRegistry {
                         // If there are no tracked phrases, print a different message
                         if (CounterMod.configManager.getConfig().shortcuts.isEmpty()) {
                             MutableComponent message = Component.literal("There are no tracked shortcuts.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
-                            player.displayClientMessage(message, false);
+                            player.sendSystemMessage(message);
                         }
                         else {
                             // List all tracked phrases
-                            player.displayClientMessage(Component.literal("Listing all tracked shortcuts: ").withStyle(style -> style.withColor(ChatFormatting.GREEN)), false);
+                            player.sendSystemMessage(Component.literal("Listing all tracked shortcuts: ").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
                             for (Tuple<String, String> tuple : CounterMod.configManager.getConfig().shortcuts) {
                                 MutableComponent message = Component.literal("- ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(tuple.second()).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                 .append(Component.literal(" -> ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                         .append(Component.literal(tuple.first()).withStyle(style -> style.withColor(ChatFormatting.AQUA)))));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                         }
                     }))
@@ -127,15 +127,15 @@ public class ModCommandRegistry {
                             // If there are no tracked phrases, print a different message
                             if (CounterMod.configManager.getConfig().phrases.isEmpty()) {
                                 MutableComponent message = Component.literal("There are no tracked phrases.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                             else {
                                 // List all tracked phrases
-                                player.displayClientMessage(Component.literal("Listing all tracked phrases: ").withStyle(style -> style.withColor(ChatFormatting.GREEN)), false);
+                                player.sendSystemMessage(Component.literal("Listing all tracked phrases: ").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
                                 for (String phrase : CounterMod.configManager.getConfig().phrases) {
                                     MutableComponent message = Component.literal("- ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                             .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA)));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
                                 }
                             }
                         }));
@@ -151,11 +151,11 @@ public class ModCommandRegistry {
                     if (CounterMod.configManager.getConfig().enable) {
                         // An instance of the player, so we can send messages to them
                         MutableComponent message = Component.literal("Automatic counting is currently enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
-                        player.displayClientMessage(message, false);
+                        player.sendSystemMessage(message);
                     }
                     else {
                         MutableComponent message = Component.literal("Automatic counting is currently disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                        player.displayClientMessage(message, false);
+                        player.sendSystemMessage(message);
                     }
                 })
                 .then(new ModCommand("true", ModCommand.ArgType.LITERAL)
@@ -169,14 +169,14 @@ public class ModCommandRegistry {
 
                                 // Tell the player that autocorrect was enabled
                                 MutableComponent message = Component.literal("Automatic counting is now enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
 
                                 // Save to config
                                 CounterMod.saveConfig();
                             }
                             else {
                                 MutableComponent message = Component.literal("Automatic counting is already enabled.").withStyle(style -> style.withColor(ChatFormatting.GREEN));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                         }))
                 .then(new ModCommand("false", ModCommand.ArgType.LITERAL)
@@ -190,14 +190,14 @@ public class ModCommandRegistry {
 
                                 // Tell the player that autocorrect was disabled
                                 MutableComponent message = Component.literal("Automatic counting is now disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
 
                                 // Save to config
                                 CounterMod.saveConfig();
                             }
                             else {
                                 MutableComponent message = Component.literal("Automatic counting is already disabled.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                         }));
 
@@ -217,7 +217,7 @@ public class ModCommandRegistry {
                                 if (phrase.length() < 3) {
                                     // Invalid phrase
                                     MutableComponent message = Component.literal("Phrases must be at least 3 letters long.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
 
                                     return;
                                 }
@@ -226,7 +226,7 @@ public class ModCommandRegistry {
                                 if (count < 0) {
                                     // Invalid count
                                     MutableComponent message = Component.literal("The count must be at least 0.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
 
                                     return;
                                 }
@@ -240,7 +240,7 @@ public class ModCommandRegistry {
                                     MutableComponent message = Component.literal("The phrase \"").withStyle(style -> style.withColor(ChatFormatting.RED))
                                             .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                             .append(Component.literal("\" was not being tracked.").withStyle(style -> style.withColor(ChatFormatting.RED))));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
                                 }
                                 else {
                                     // Perform updates and error checks on the config's counters
@@ -255,7 +255,7 @@ public class ModCommandRegistry {
                                                     .append(Component.literal("\" to ").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                             .append(Component.literal("" + count).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                                     .append(Component.literal(".").withStyle(style -> style.withColor(ChatFormatting.GREEN))))));
-                                    player.displayClientMessage(message, false);
+                                    player.sendSystemMessage(message);
 
                                     // Save the config
                                     CounterMod.saveConfig();
@@ -277,7 +277,7 @@ public class ModCommandRegistry {
                         MutableComponent message = Component.literal("No longer appending the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                 .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                         .append(Component.literal("\" to the end of each sentence.").withStyle(style -> style.withColor(ChatFormatting.GREEN))));
-                        player.displayClientMessage(message, false);
+                        player.sendSystemMessage(message);
 
                         // Remove the append phrase
                         CounterMod.configManager.getConfig().appendPhrase = null;
@@ -288,7 +288,7 @@ public class ModCommandRegistry {
                     else {
                         // Tell the player that nothing was being appended
                         MutableComponent message = Component.literal("No phrases are being appended to the end of each sentence.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                        player.displayClientMessage(message, false);
+                        player.sendSystemMessage(message);
                     }
                 })
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.STRING)
@@ -309,14 +309,14 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("The phrase \"").withStyle(style -> style.withColor(ChatFormatting.RED))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                 .append(Component.literal("\" was not being tracked. You must track the phrase before you can append it.").withStyle(style -> style.withColor(ChatFormatting.RED))));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                             else if(CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
                                 // If this phrase is already being appended, do nothing and tell the player
                                 MutableComponent message = Component.literal("Already appending the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                 .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN))));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
                             }
                             else {
                                 // Store this phrase for appending
@@ -326,7 +326,7 @@ public class ModCommandRegistry {
                                 MutableComponent message = Component.literal("The phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                 .append(Component.literal("\" will now be appended at the end of each sentence if possible.").withStyle(style -> style.withColor(ChatFormatting.GREEN))));
-                                player.displayClientMessage(message, false);
+                                player.sendSystemMessage(message);
 
                                 // Save the config
                                 CounterMod.saveConfig();
@@ -348,7 +348,7 @@ public class ModCommandRegistry {
                                     if (!phraseShortcut.matches("[a-zA-Z0-9]+")) {
                                         // Regular message without the "it was previously..."
                                         MutableComponent message = Component.literal("Shortcuts can only contain letters and numbers.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                        player.displayClientMessage(message, false);
+                                        player.sendSystemMessage(message);
 
                                         return;
                                     }
@@ -377,7 +377,7 @@ public class ModCommandRegistry {
                                                         .append(Component.literal("\" will no longer be replaced with the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                                 .append(Component.literal(removedPhrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                                         .append(Component.literal(".\"").withStyle(style -> style.withColor(ChatFormatting.GREEN))))));
-                                        player.displayClientMessage(message, false);
+                                        player.sendSystemMessage(message);
 
                                         // Save the config
                                         CounterMod.saveConfig();
@@ -386,7 +386,7 @@ public class ModCommandRegistry {
                                         MutableComponent message = Component.literal("The shortcut \"").withStyle(style -> style.withColor(ChatFormatting.RED))
                                                 .append(Component.literal(phraseShortcut).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                         .append(Component.literal("\" was not being replaced by a phrase.").withStyle(style -> style.withColor(ChatFormatting.RED))));
-                                        player.displayClientMessage(message, false);
+                                        player.sendSystemMessage(message);
                                     }
                                 })))
                 .then(new ModCommand("add", ModCommand.ArgType.LITERAL)
@@ -404,7 +404,7 @@ public class ModCommandRegistry {
                                             if (!phraseShortcut.matches("[a-zA-Z0-9]+")) {
                                                 // Regular message without the "it was previously..."
                                                 MutableComponent message = Component.literal("Shortcuts can only contain letters and numbers.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                                player.displayClientMessage(message, false);
+                                                player.sendSystemMessage(message);
 
                                                 return;
                                             }
@@ -443,7 +443,7 @@ public class ModCommandRegistry {
                                                                     .append(Component.literal("\" was already being replaced with the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                                             .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                                                     .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN))))));
-                                                    player.displayClientMessage(message, false);
+                                                    player.sendSystemMessage(message);
                                                 }
                                                 else {
                                                     // Tell the player that we're replacing the phrase tied to the shortcut
@@ -454,7 +454,7 @@ public class ModCommandRegistry {
                                                                                     .append(Component.literal("\". It was previously replaced with the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                                                             .append(Component.literal(previousPhrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                                                                     .append(Component.literal(".\"").withStyle(style -> style.withColor(ChatFormatting.GREEN))))))));
-                                                    player.displayClientMessage(message, false);
+                                                    player.sendSystemMessage(message);
                                                 }
                                             }
                                             else {
@@ -468,7 +468,7 @@ public class ModCommandRegistry {
                                                                 .append(Component.literal("\" will now be replaced with the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
                                                                                 .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN))))));
-                                                player.displayClientMessage(message, false);
+                                                player.sendSystemMessage(message);
                                             }
 
                                             // Save the config
@@ -481,20 +481,20 @@ public class ModCommandRegistry {
                     LocalPlayer player = Minecraft.getInstance().player;
 
                     // Header
-                    player.displayClientMessage(Component.literal("§a=========== Counter Mod Help ==========="), false);
+                    player.sendSystemMessage(Component.literal("§a=========== Counter Mod Help ==========="));
 
                     // Condensed commands
-                    player.displayClientMessage(Component.literal("§b.track <phrase> §7- Starts counting the number of times the phrase is used for each server. The phrase must be at least 3 letters long."), false);
-                    player.displayClientMessage(Component.literal("§b.untrack <phrase> §7- Stops counting for the specified phrase. The phrase must be at least 3 letters long."), false);
-                    player.displayClientMessage(Component.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."), false);
-                    player.displayClientMessage(Component.literal("§b.enable [true/false] §7- Enables or disables autocorrect for phrases."), false);
-                    player.displayClientMessage(Component.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."), false);
-                    player.displayClientMessage(Component.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."), false);
-                    player.displayClientMessage(Component.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."), false);
-                    player.displayClientMessage(Component.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."), false);
+                    player.sendSystemMessage(Component.literal("§b.track <phrase> §7- Starts counting the number of times the phrase is used for each server. The phrase must be at least 3 letters long."));
+                    player.sendSystemMessage(Component.literal("§b.untrack <phrase> §7- Stops counting for the specified phrase. The phrase must be at least 3 letters long."));
+                    player.sendSystemMessage(Component.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."));
+                    player.sendSystemMessage(Component.literal("§b.enable [true/false] §7- Enables or disables autocorrect for phrases."));
+                    player.sendSystemMessage(Component.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."));
+                    player.sendSystemMessage(Component.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."));
+                    player.sendSystemMessage(Component.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."));
+                    player.sendSystemMessage(Component.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."));
 
                     // Footer
-                    player.displayClientMessage(Component.literal("§a======================================"), false);
+                    player.sendSystemMessage(Component.literal("§a======================================"));
                 });
 
         // Register all commands
@@ -658,7 +658,7 @@ public class ModCommandRegistry {
                         "function because a list of ModCommands with non-literal argument " +
                         "types was passed in. Please contact TurtleCamera about this issue.")
                         .withStyle(style -> style.withColor(ChatFormatting.RED));
-                player.displayClientMessage(message, false);
+                player.sendSystemMessage(message);
 
                 return null;
             }
