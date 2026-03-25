@@ -242,8 +242,8 @@ public class ModifyMessageMixin {
     private void invalidCommand() {
         LocalPlayer player = Minecraft.getInstance().player;
         if (player != null) {
-            player.displayClientMessage(Component.literal("Invalid command. Type .help for a list of commands.")
-                            .withStyle(ChatFormatting.RED),false);
+            player.sendSystemMessage(Component.literal("Invalid command. Type .help for a list of commands.")
+                            .withStyle(ChatFormatting.RED));
         }
     }
 }
