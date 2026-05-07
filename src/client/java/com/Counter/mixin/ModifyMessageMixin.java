@@ -199,16 +199,27 @@ public class ModifyMessageMixin {
                 String append = CounterMod.configManager.getConfig().appendPhrase;
                 if (append != null) {
                     CounterMod.configManager.getConfig().performCountersChecks(append, true);
+
                     int counter = serverCounters.get(append) + 1;
                     serverCounters.put(append, counter);
 
-                    String appendText = ", " + append + " X" + counter;
-                    int trailingIndex = PhraseUtils.trailingPunctuationStart(content);
-                    if (trailingIndex == -1) {
-                        content = content + appendText;
-                    } else {
-                        content = content.substring(0, trailingIndex) + appendText + content.substring(trailingIndex);
+                    // Normalize trailing comma before inserting append
+                    if (content.endsWith(",")) {
+                        content = content.substring(0, content.length() - 1);
                     }
+
+                    String appendText = ", " + append + " X" + counter;
+
+                    // Insert before trailing punctuation if it exists
+                    int insertIndex = PhraseUtils.trailingPunctuationStart(content);
+
+                    if (insertIndex == -1) {
+                        insertIndex = content.length();
+                    }
+
+                    content = content.substring(0, insertIndex)
+                            + appendText
+                            + content.substring(insertIndex);
                 }
             }
 
