@@ -210,8 +210,16 @@ public class ModifyMessageMixin {
 
                     String appendText = ", " + append + " X" + counter;
 
-                    int insertIndex = content.length();
-                    content = content.substring(0, insertIndex) + appendText + content.substring(insertIndex);
+                    // Insert before trailing punctuation if it exists
+                    int insertIndex = PhraseUtils.trailingPunctuationStart(content);
+
+                    if (insertIndex == -1) {
+                        insertIndex = content.length();
+                    }
+
+                    content = content.substring(0, insertIndex)
+                            + appendText
+                            + content.substring(insertIndex);
                 }
             }
 

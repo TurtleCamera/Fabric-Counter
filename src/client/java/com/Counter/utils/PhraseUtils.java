@@ -57,16 +57,19 @@ public class PhraseUtils {
             return -1;
         }
 
-        // Walk backwards over punctuation
-        for (int i = content.length () - 1; i >= 0; i--) {
-            String suffix = content.substring(i);
-            if (isAllPunctuation(suffix)) {
-                return i;
-            }
+        int i = content.length() - 1;
+
+        // Only allow terminal punctuation
+        while (i >= 0 && isTerminalPunctuation(content.charAt(i))) {
+            i--;
         }
 
-        // No trailing punctuation, so return the end of the string
-        return -1;
+        // No terminal punctuation found
+        if (i == content.length() - 1) {
+            return -1;
+        }
+
+        return i + 1;
     }
 
     // Finds the index after the last instance of the phrase in String content. If this
