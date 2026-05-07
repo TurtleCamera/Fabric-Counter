@@ -45,6 +45,12 @@ public class PhraseUtils {
         return indices;
     }
 
+
+    // Checks if the punctuation is terminal
+    public static boolean isTerminalPunctuation(char c) {
+        return c == '.' || c == '!' || c == '?';
+    }
+
     // Gets the starting index of trailing punctuation
     public static int trailingPunctuationStart(String content) {
         if (content == null || content.isEmpty()) {

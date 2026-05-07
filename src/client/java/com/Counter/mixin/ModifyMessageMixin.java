@@ -203,12 +203,25 @@ public class ModifyMessageMixin {
                     serverCounters.put(append, counter);
 
                     String appendText = ", " + append + " X" + counter;
-                    int trailingIndex = PhraseUtils.trailingPunctuationStart(content);
-                    if (trailingIndex == -1) {
-                        content = content + appendText;
-                    } else {
-                        content = content.substring(0, trailingIndex) + appendText + content.substring(trailingIndex);
+                    int insertIndex = content.length();
+
+                    // Walk backwards over punctuation that should be preserved after append
+                    while (insertIndex > 0) {
+                        char c = content.charAt(insertIndex - 1);
+
+                        // Only push insertion BEFORE . ! ?
+                        if (c == '.' || c == '!' || c == '?') {
+                            insertIndex--;
+                        }
+                        // For everything else (like ), ], }, commas), stop here
+                        else if (!Character.isLetterOrDigit(c) && !Character.isWhitespace(c)) {
+                            break;
+                        } else {
+                            break;
+                        }
                     }
+
+                    content = content.substring(0, insertIndex) + appendText + content.substring(insertIndex);
                 }
             }
 
