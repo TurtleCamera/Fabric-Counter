@@ -240,7 +240,13 @@ public class ModifyMessageMixin {
 
                 ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
                 clientPacketListener.send(
-                        new ServerboundChatPacket(chunk, instantChunk, lChunk, messageSignatureChunk, updateChunk.update())
+                        new ServerboundChatPacket(
+                                chunk,
+                                instantChunk,
+                                lChunk,
+                                Optional.ofNullable(messageSignatureChunk),
+                                updateChunk.update()
+                        )
                 );
             }
 
