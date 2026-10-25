@@ -146,6 +146,10 @@ public class ModifyMessageMixin {
             }
 
             boolean cancelAppend = false; // Whether to skip the append phrase
+            // Ensure the server's counter map exists
+            CounterMod.configManager.getConfig().performCountersChecks(null, false);
+
+            // Retrieve the initialized map
             Map<String, Integer> serverCounters = CounterMod.configManager.getConfig().counters.get(uuid);
 
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
@@ -240,7 +244,13 @@ public class ModifyMessageMixin {
 
                 ClientPacketListener clientPacketListener = (ClientPacketListener) (Object) this;
                 clientPacketListener.send(
-                        new ServerboundChatPacket(chunk, instantChunk, lChunk, messageSignatureChunk, updateChunk.update())
+                        new ServerboundChatPacket(
+                                chunk,
+                                instantChunk,
+                                lChunk,
+                                Optional.ofNullable(messageSignatureChunk),
+                                updateChunk.update()
+                        )
                 );
             }
 
