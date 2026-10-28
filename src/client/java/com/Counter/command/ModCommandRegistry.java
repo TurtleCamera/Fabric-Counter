@@ -453,29 +453,36 @@ public class ModCommandRegistry {
                                             CounterMod.saveConfig();
                                         }))));
 
-        // .bindphrase: assign any phrase to the configurable keybind.
+        // .bindphrase: assign any phrase to the configurable keybind, or clear with no arguments.
         ModCommand bindphrase = new ModCommand(".bindphrase", ModCommand.ArgType.LITERAL)
                 .executes(context -> {
                     LocalPlayer player = Minecraft.getInstance().player;
                     String phrase = CounterMod.configManager.getConfig().keybindPhrase;
-                    player.sendSystemMessage(Component.literal(phrase == null
-                            ? "No keybind phrase assigned. Use .bindphrase <phrase>."
-                            : "Current keybind phrase: " + phrase).withStyle(ChatFormatting.GREEN));
+
+                    if (phrase == null || phrase.isBlank()) {
+                        player.sendSystemMessage(Component.literal("No keybind phrase is assigned.").withStyle(ChatFormatting.RED));
+                    }
+                    else {
+                        CounterMod.configManager.getConfig().keybindPhrase = null;
+                        CounterMod.saveConfig();
+
+                        MutableComponent message = Component.literal("No longer sending the phrase \"")
+                                .withStyle(ChatFormatting.GREEN)
+                                .append(Component.literal(phrase).withStyle(ChatFormatting.AQUA))
+                                .append(Component.literal("\" using the keybind.").withStyle(ChatFormatting.GREEN));
+                        player.sendSystemMessage(message);
+                    }
                 })
                 .then(new ModCommand("<phrase>", ModCommand.ArgType.GREEDY)
                         .executes(context -> {
                             String phrase = context.getString("<phrase>").trim();
                             LocalPlayer player = Minecraft.getInstance().player;
-                            if (phrase.equalsIgnoreCase("clear")) {
-                                CounterMod.configManager.getConfig().keybindPhrase = null;
-                                player.sendSystemMessage(Component.literal("Keybind phrase cleared.").withStyle(ChatFormatting.GREEN));
-                            } else if (phrase.isEmpty()) {
+                            if (phrase.isEmpty()) {
                                 player.sendSystemMessage(Component.literal("Please specify a phrase.").withStyle(ChatFormatting.RED));
                                 return;
-                            } else {
-                                CounterMod.configManager.getConfig().keybindPhrase = phrase;
-                                player.sendSystemMessage(Component.literal("Keybind phrase set to: " + phrase).withStyle(ChatFormatting.GREEN));
                             }
+                            CounterMod.configManager.getConfig().keybindPhrase = phrase;
+                            player.sendSystemMessage(Component.literal("Keybind phrase set to: " + phrase).withStyle(ChatFormatting.GREEN));
                             CounterMod.saveConfig();
                         }));
 
@@ -495,7 +502,7 @@ public class ModCommandRegistry {
                     player.sendSystemMessage(Component.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."));
                     player.sendSystemMessage(Component.literal("§b.append <phrase> §7- Appends a phrase to the end of each sentence (with its counter if tracked). Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."));
                     player.sendSystemMessage(Component.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."));
-                    player.sendSystemMessage(Component.literal("§b.bindphrase [phrase/clear] §7- Set, view, or clear the phrase sent by the configurable keybind. Hold Shift to batch presses."));
+                    player.sendSystemMessage(Component.literal("§b.bindphrase [<phrase>] §7- Assign a phrase to the keybind. Run without arguments to clear it. Hold the batch modifier to queue presses."));
                     player.sendSystemMessage(Component.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."));
 
                     // Footer

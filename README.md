@@ -47,13 +47,22 @@ Sets the counter of a phrase to the specified value.
 ---
 
 ### `.append <phrase>`
-Appends a tracked phrase to the end of each sentence.
-
+Appends the specified phrase to the end of each sentence.
+- The phrase does **not** need to be tracked.
+- Tracked phrases receive their counter suffix; untracked phrases are appended as plain text.
 - Running the command without arguments removes the append phrase.
 - The append is **cancelled** if:
-    - The phrase is already at the start or end of the sentence.
-    - The sentence contains only punctuation.
-    - The sentence is inside `()`, `[]`, or `{}`.
+  - **Tracked append phrase:** Any tracked phrase is already at the start or end of the sentence.
+  - **Untracked append phrase:** The assigned append phrase is already at the start or end of the sentence. Other tracked phrases do not affect this check.
+  - The sentence contains only punctuation.
+  - The sentence is inside `()`, `[]`, or `{}`.
+
+---
+
+### `.bindphrase [phrase/clear]`
+Assigns a phrase to the **Send Assigned Phrase** keybind.
+- `.bindphrase <phrase>` assigns the phrase, whether tracked or untracked.
+- Typing `.bindphrase` without an argument removes the assignment.
 
 ---
 
@@ -68,6 +77,22 @@ Removes a shortcut.
 
 ---
 
+## Keybinds
+
+Both keybinds appear under **Phrase Counter** in Minecraft's **Controls → Key Binds** menu and can be reassigned.
+
+| Keybind | Default | Action |
+| --- | --- | --- |
+| **Send Assigned Phrase** | **R** | Sends the phrase assigned with `.bindphrase` without opening chat. |
+| **Batch Phrases Modifier** | **Left Shift** | Hold while pressing the phrase key to queue messages; release to send them together. |
+
+- Each press while the batch modifier is held adds another entry. For example, three presses can produce `RIP X1, RIP X2, and RIP X3` in one chat message.
+- Tracked phrases receive an incremented counter suffix when counting is enabled; untracked phrases are sent as plain text.
+- When `.enable false` is set, the keybind still sends the assigned phrase, but without a counter suffix.
+- If the resulting message exceeds Minecraft's **256-character** chat limit, it is not sent and **no counters are incremented**.
+
+---
+
 ## Example Usage
 ```plaintext
 .track :thumbsup:
@@ -76,3 +101,4 @@ Removes a shortcut.
 .append :thumbsup:
 .enable true
 .shortcut add :thumbsup: tu
+.bindphrase RIP
