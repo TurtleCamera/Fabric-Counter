@@ -26,7 +26,7 @@ public class PhraseKeybindHandler implements ClientModInitializer {
                     Identifier.fromNamespaceAndPath("counter", "phrase_counter")
             );
 
-    private static final List<String> pending = new ArrayList<>();
+    private static int pendingPresses;
     private static boolean wasBatchModifierDown;
     private static boolean sending;
 
@@ -53,7 +53,7 @@ public class PhraseKeybindHandler implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null || client.getConnection() == null) {
-                pending.clear();
+                pendingPresses = 0;
                 wasBatchModifierDown = false;
                 while (key.consumeClick()) {
                     // Discard presses outside a world.
@@ -66,15 +66,10 @@ public class PhraseKeybindHandler implements ClientModInitializer {
             // Never activate a gameplay keybind while a screen is open.
             if (client.gui.screen() == null) {
                 while (key.consumeClick()) {
-                    String entry = makeEntry();
-                    if (entry == null) {
-                        continue;
-                    }
-
                     if (batchModifierDown) {
-                        pending.add(entry);
+                        pendingPresses++;
                     } else {
-                        send(client, entry);
+                        send(client, 1);
                     }
                 }
             } else {
@@ -84,63 +79,50 @@ public class PhraseKeybindHandler implements ClientModInitializer {
             }
 
             // Releasing the configured modifier sends the batch.
-            if (wasBatchModifierDown && !batchModifierDown && !pending.isEmpty()) {
-                send(client, joinEntries(pending));
-                pending.clear();
+            if (wasBatchModifierDown && !batchModifierDown && pendingPresses > 0) {
+                send(client, pendingPresses);
+                pendingPresses = 0;
             }
 
             wasBatchModifierDown = batchModifierDown;
         });
     }
 
-    private static String makeEntry() {
+    /** Build the message without changing counters, then commit only after sending. */
+    private static void send(Minecraft client, int presses) {
         CounterConfig config = CounterMod.configManager.getConfig();
         String assigned = config.keybindPhrase;
-
-        if (assigned == null || assigned.isBlank()) {
-            return null;
+        if (assigned == null || assigned.isBlank() || presses <= 0) {
+            return;
         }
 
-        // Match tracked phrases case-insensitively, retaining their canonical spelling.
         String tracked = null;
-        for (String phrase : config.phrases) {
-            if (phrase.equalsIgnoreCase(assigned)) {
-                tracked = phrase;
-                break;
+        if (config.enable) {
+            for (String phrase : config.phrases) {
+                if (phrase.equalsIgnoreCase(assigned)) {
+                    tracked = phrase;
+                    break;
+                }
             }
         }
 
-        if (tracked == null || !config.enable) {
-            return assigned;
+        int initialCount = 0;
+        if (tracked != null) {
+            Map<String, Integer> counters = config.counters == null
+                    ? null : config.counters.get(UUIDHandler.getUUID());
+            if (counters != null) {
+                initialCount = Math.max(0, counters.getOrDefault(tracked, 0));
+            }
         }
 
-        config.performCountersChecks(tracked, true);
-
-        Map<String, Integer> counters = config.counters.get(UUIDHandler.getUUID());
-        int count = counters.get(tracked) + 1;
-        counters.put(tracked, count);
-
-        CounterMod.saveConfig();
-        return assigned + " X" + count;
-    }
-
-    private static String joinEntries(List<String> entries) {
-        if (entries.size() == 1) {
-            return entries.get(0);
+        List<String> entries = new ArrayList<>();
+        for (int i = 1; i <= presses; i++) {
+            entries.add(tracked == null ? assigned : assigned + " X" + (initialCount + i));
         }
-
-        if (entries.size() == 2) {
-            return entries.get(0) + " and " + entries.get(1);
-        }
-
-        return String.join(", ", entries.subList(0, entries.size() - 1))
-                + ", and " + entries.get(entries.size() - 1);
-    }
-
-    private static void send(Minecraft client, String message) {
+        String message = joinEntries(entries);
         if (message.length() > MAX_CHAT_LENGTH) {
             client.player.sendSystemMessage(Component.literal(
-                    "Keybind message exceeds 256 characters and was not sent. Counters were already updated."
+                    "Keybind message exceeds 256 characters and was not sent."
             ).withStyle(ChatFormatting.RED));
             return;
         }
@@ -152,5 +134,22 @@ public class PhraseKeybindHandler implements ClientModInitializer {
         } finally {
             sending = false;
         }
+
+        if (tracked != null) {
+            config.performCountersChecks(tracked, true);
+            config.counters.get(UUIDHandler.getUUID()).put(tracked, initialCount + presses);
+            CounterMod.saveConfig();
+        }
+    }
+
+    private static String joinEntries(List<String> entries) {
+        if (entries.size() == 1) {
+            return entries.get(0);
+        }
+        if (entries.size() == 2) {
+            return entries.get(0) + " and " + entries.get(1);
+        }
+        return String.join(", ", entries.subList(0, entries.size() - 1))
+                + ", and " + entries.get(entries.size() - 1);
     }
 }
