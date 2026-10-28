@@ -148,7 +148,32 @@ public class ModifyMessageMixin {
                 content = PhraseUtils.replaceShortcut(content, phrase, shortcut);
             }
 
-            boolean cancelAppend = false; // Whether to skip the append phrase
+            // Check append suppression before counter suffixes are inserted.
+            String appendPhrase = CounterMod.configManager.getConfig().appendPhrase;
+            boolean cancelAppend = false;
+            if (appendPhrase != null && !appendPhrase.isEmpty()) {
+                // For tracked append phrases, preserve the original rule: any tracked
+                // phrase at the start or end prevents an additional append.
+                // For untracked append phrases, check only the append phrase itself.
+                boolean appendIsTracked = CounterMod.configManager.getConfig().phrases.contains(appendPhrase);
+                List<String> phrasesToCheck = appendIsTracked
+                        ? CounterMod.configManager.getConfig().phrases
+                        : java.util.Collections.singletonList(appendPhrase);
+
+                for (String phraseToCheck : phrasesToCheck) {
+                    List<Integer> indices = PhraseUtils.findPhraseIndices(content, phraseToCheck);
+                    for (int index : indices) {
+                        if (index == 0 || PhraseUtils.isAllPunctuation(
+                                content.substring(index + phraseToCheck.length()))) {
+                            cancelAppend = true;
+                            break;
+                        }
+                    }
+                    if (cancelAppend) {
+                        break;
+                    }
+                }
+            }
             // Ensure the server's counter map exists
             CounterMod.configManager.getConfig().performCountersChecks(null, false);
 
@@ -158,15 +183,6 @@ public class ModifyMessageMixin {
             for (String phrase : CounterMod.configManager.getConfig().phrases) {
                 // Find all exact occurrences of the phrase
                 List<Integer> phraseIndices = PhraseUtils.findPhraseIndices(content, phrase);
-
-                // Cancel append if the last phrase ends at the end of the content
-                if (!phraseIndices.isEmpty()) {
-                    int endIndex = phraseIndices.get(phraseIndices.size() - 1) + phrase.length();
-                    String endContent = content.substring(endIndex);
-                    if (PhraseUtils.isAllPunctuation(endContent)) {
-                        cancelAppend = true;
-                    }
-                }
 
                 // Ensure server counters exist
                 CounterMod.configManager.getConfig().performCountersChecks(phrase, true);
@@ -191,14 +207,6 @@ public class ModifyMessageMixin {
                     (content.startsWith("{") && content.endsWith("}")) ||
                     PhraseUtils.isAllPunctuation(content)) {
                 cancelAppend = true;
-            }
-
-            // Skip append if sentence starts with a tracked phrase
-            for (String phrase : CounterMod.configManager.getConfig().phrases) {
-                if (content.toLowerCase().startsWith(phrase.toLowerCase())) {
-                    cancelAppend = true;
-                    break;
-                }
             }
 
             // Append the player's append phrase if allowed
