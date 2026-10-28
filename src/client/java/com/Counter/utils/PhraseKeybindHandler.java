@@ -1,8 +1,8 @@
 
-package com.Counter;
+package com.Counter.utils;
 
+import com.Counter.CounterMod;
 import com.Counter.config.CounterConfig;
-import com.Counter.utils.UUIDHandler;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;

@@ -1,7 +1,7 @@
 package com.Counter.mixin;
 
 import com.Counter.CounterMod;
-import com.Counter.PhraseKeybindHandler;
+import com.Counter.utils.PhraseKeybindHandler;
 import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
