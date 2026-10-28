@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-/** Sends one assigned phrase, or batches Shift-modified presses into one chat message. */
+/** Sends one assigned phrase, or batches modifier-held presses into one chat message. */
 public class PhraseKeybindHandler implements ClientModInitializer {
     private static final int MAX_CHAT_LENGTH = 256;
 
@@ -27,7 +27,7 @@ public class PhraseKeybindHandler implements ClientModInitializer {
             );
 
     private static final List<String> pending = new ArrayList<>();
-    private static boolean wasShiftDown;
+    private static boolean wasBatchModifierDown;
     private static boolean sending;
 
     // Used by the existing sendChat mixin to avoid re-counting and auto-appending our message.
@@ -44,17 +44,24 @@ public class PhraseKeybindHandler implements ClientModInitializer {
                 CATEGORY
         ));
 
+        KeyMapping batchModifier = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+                "key.counter.batch_modifier",
+                InputConstants.Type.KEYBOARD,
+                225, // Left Shift (SDL3 scancode)
+                CATEGORY
+        ));
+
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (client.player == null || client.getConnection() == null) {
                 pending.clear();
-                wasShiftDown = false;
+                wasBatchModifierDown = false;
                 while (key.consumeClick()) {
                     // Discard presses outside a world.
                 }
                 return;
             }
 
-            boolean shiftDown = client.hasShiftDown();
+            boolean batchModifierDown = batchModifier.isDown();
 
             // Never activate a gameplay keybind while a screen is open.
             if (client.gui.screen() == null) {
@@ -64,7 +71,7 @@ public class PhraseKeybindHandler implements ClientModInitializer {
                         continue;
                     }
 
-                    if (shiftDown) {
+                    if (batchModifierDown) {
                         pending.add(entry);
                     } else {
                         send(client, entry);
@@ -76,13 +83,13 @@ public class PhraseKeybindHandler implements ClientModInitializer {
                 }
             }
 
-            // Releasing the final held Shift sends the batch.
-            if (wasShiftDown && !shiftDown && !pending.isEmpty()) {
+            // Releasing the configured modifier sends the batch.
+            if (wasBatchModifierDown && !batchModifierDown && !pending.isEmpty()) {
                 send(client, joinEntries(pending));
                 pending.clear();
             }
 
-            wasShiftDown = shiftDown;
+            wasBatchModifierDown = batchModifierDown;
         });
     }
 
