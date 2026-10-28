@@ -50,12 +50,12 @@ Sets the counter of a phrase to the specified value.
 Appends the specified phrase to the end of each sentence.
 - The phrase does **not** need to be tracked.
 - Tracked phrases receive their counter suffix; untracked phrases are appended as plain text.
-
 - Running the command without arguments removes the append phrase.
 - The append is **cancelled** if:
-    - The phrase is already at the start or end of the sentence.
-    - The sentence contains only punctuation.
-    - The sentence is inside `()`, `[]`, or `{}`.
+  - **Tracked append phrase:** Any tracked phrase is already at the start or end of the sentence.
+  - **Untracked append phrase:** The assigned append phrase is already at the start or end of the sentence. Other tracked phrases do not affect this check.
+  - The sentence contains only punctuation.
+  - The sentence is inside `()`, `[]`, or `{}`.
 
 ---
 
