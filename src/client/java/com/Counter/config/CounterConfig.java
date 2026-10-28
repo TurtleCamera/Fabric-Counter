@@ -19,6 +19,9 @@ public class CounterConfig {
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendPhrase = null;
 
+    // Phrase sent by the configurable keybind (tracked or untracked).
+    public String keybindPhrase = null;
+
     // Enables or disables counting
     public boolean enable = true;
 
@@ -26,14 +29,6 @@ public class CounterConfig {
     public boolean checkErrors() {
         // Variable to track if we found an error
         boolean hasErrors = false;
-
-        // Is the append phrase untracked?
-        if (appendPhrase != null && !phrases.contains(appendPhrase)) {
-            // Set the append phrase to null
-            System.err.println("Error: The append phrase was untracked, so it has been removed.");
-            appendPhrase = null;
-            hasErrors = true;
-        }
 
         // Shortcuts shouldn't have any null elements
         boolean hasInvalid = false;

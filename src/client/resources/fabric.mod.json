@@ -17,7 +17,7 @@
 		"main": [
 			"com.Counter.CounterMod"
 		],
-		"client": []
+		"client": ["com.Counter.PhraseKeybindHandler"]
 	},
 	"mixins": [
 		"counter.mixins.json",

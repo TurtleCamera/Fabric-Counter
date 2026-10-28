@@ -1,6 +1,7 @@
 package com.Counter.mixin;
 
 import com.Counter.CounterMod;
+import com.Counter.PhraseKeybindHandler;
 import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
@@ -41,6 +42,8 @@ public class ModifyMessageMixin {
             cancellable = true
     )
     private void onSendChatMessage(String content, CallbackInfo ci) {
+        if (PhraseKeybindHandler.isSending()) return;
+
         // Create a command parser
         CommandParser parser = new CommandParser(content);
 
@@ -202,17 +205,21 @@ public class ModifyMessageMixin {
             if (!cancelAppend) {
                 String append = CounterMod.configManager.getConfig().appendPhrase;
                 if (append != null) {
-                    CounterMod.configManager.getConfig().performCountersChecks(append, true);
-
-                    int counter = serverCounters.get(append) + 1;
-                    serverCounters.put(append, counter);
+                    // Only tracked phrases have counters.
+                    boolean tracked = CounterMod.configManager.getConfig().phrases.contains(append);
+                    int counter = 0;
+                    if (tracked) {
+                        CounterMod.configManager.getConfig().performCountersChecks(append, true);
+                        counter = serverCounters.get(append) + 1;
+                        serverCounters.put(append, counter);
+                    }
 
                     // Normalize trailing comma before inserting append
                     if (content.endsWith(",")) {
                         content = content.substring(0, content.length() - 1);
                     }
 
-                    String appendText = ", " + append + " X" + counter;
+                    String appendText = ", " + append + (tracked ? " X" + counter : "");
 
                     // Insert before trailing punctuation if it exists
                     int insertIndex = PhraseUtils.trailingPunctuationStart(content);
