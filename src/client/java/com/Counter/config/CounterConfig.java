@@ -19,6 +19,9 @@ public class CounterConfig {
     // If this variable is not null, then this emote will be appended to the end of the sentence
     public String appendPhrase = null;
 
+    // Phrase sent by the configurable keybind (tracked or untracked).
+    public String keybindPhrase = null;
+
     // Enables or disables counting
     public boolean enable = true;
 

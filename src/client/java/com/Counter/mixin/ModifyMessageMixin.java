@@ -1,6 +1,7 @@
 package com.Counter.mixin;
 
 import com.Counter.CounterMod;
+import com.Counter.PhraseKeybindHandler;
 import com.Counter.command.CommandContext;
 import com.Counter.command.CommandParser;
 import com.Counter.command.ModCommand;
@@ -41,6 +42,8 @@ public class ModifyMessageMixin {
             cancellable = true
     )
     private void onSendChatMessage(String content, CallbackInfo ci) {
+        if (PhraseKeybindHandler.isSending()) return;
+
         // Create a command parser
         CommandParser parser = new CommandParser(content);
 
