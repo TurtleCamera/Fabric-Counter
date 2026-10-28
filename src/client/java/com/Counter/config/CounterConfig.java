@@ -27,14 +27,6 @@ public class CounterConfig {
         // Variable to track if we found an error
         boolean hasErrors = false;
 
-        // Is the append phrase untracked?
-        if (appendPhrase != null && !phrases.contains(appendPhrase)) {
-            // Set the append phrase to null
-            System.err.println("Error: The append phrase was untracked, so it has been removed.");
-            appendPhrase = null;
-            hasErrors = true;
-        }
-
         // Shortcuts shouldn't have any null elements
         boolean hasInvalid = false;
         for (int i = shortcuts.size() - 1; i >= 0; i--) {

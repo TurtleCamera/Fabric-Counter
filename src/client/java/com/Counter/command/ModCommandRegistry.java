@@ -72,17 +72,6 @@ public class ModCommandRegistry {
                                         .append(Component.literal("\".").withStyle(style -> style.withColor(ChatFormatting.GREEN)));
                                 player.sendSystemMessage(message);
 
-                                // If this phrase was being appended, it should be removed too.
-                                if (CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
-                                    // Stop appending this phrase
-                                    CounterMod.configManager.getConfig().appendPhrase = null;
-
-                                    // Tell the player what happened
-                                    message = Component.literal("This phrase will no longer be appended to the end of each sentence. " +
-                                            "You must track it again to continue appending.").withStyle(style -> style.withColor(ChatFormatting.RED));
-                                    player.sendSystemMessage(message);
-                                }
-
                                 // Save to configuration
                                 CounterMod.saveConfig();
                             }
@@ -299,19 +288,8 @@ public class ModCommandRegistry {
                             // Get the phrase
                             String phrase = context.getString("<phrase>");
 
-                            // Perform updates and error checks on the config's counters
-                            CounterMod.configManager.getConfig().performCountersChecks(phrase, false);
-
-                            // Different cases depending on the player's settings
-                            if (!CounterMod.configManager.getConfig().phrases.contains(phrase)) {
-                                // If this phrase isn't being tracked, tell the player that it needs to be tracked
-                                // Tell the player what happened
-                                MutableComponent message = Component.literal("The phrase \"").withStyle(style -> style.withColor(ChatFormatting.RED))
-                                        .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
-                                                .append(Component.literal("\" was not being tracked. You must track the phrase before you can append it.").withStyle(style -> style.withColor(ChatFormatting.RED))));
-                                player.sendSystemMessage(message);
-                            }
-                            else if(CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
+                            // A phrase can be appended whether or not it is tracked.
+                            if (CounterMod.configManager.getConfig().appendPhrase != null && CounterMod.configManager.getConfig().appendPhrase.equals(phrase)) {
                                 // If this phrase is already being appended, do nothing and tell the player
                                 MutableComponent message = Component.literal("Already appending the phrase \"").withStyle(style -> style.withColor(ChatFormatting.GREEN))
                                         .append(Component.literal(phrase).withStyle(style -> style.withColor(ChatFormatting.AQUA))
@@ -489,7 +467,7 @@ public class ModCommandRegistry {
                     player.sendSystemMessage(Component.literal("§b.list [phrase/shortcut] §7- List the tracked phrases or shortcuts."));
                     player.sendSystemMessage(Component.literal("§b.enable [true/false] §7- Enables or disables autocorrect for phrases."));
                     player.sendSystemMessage(Component.literal("§b.set <phrase> <count> §7- Sets the counter of a phrase to the specified value. The phrase must be at least 3 letters long and the count must be ≥ 0."));
-                    player.sendSystemMessage(Component.literal("§b.append <phrase> §7- Appends a tracked phrase to the end of each sentence. Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."));
+                    player.sendSystemMessage(Component.literal("§b.append <phrase> §7- Appends a phrase to the end of each sentence (with its counter if tracked). Typing the command without any arguments removes the append phrase. This action is cancelled if a phrase is already at the start or end of the sentence, the sentence is only punctuation, or the sentence is inside (), [], or {}."));
                     player.sendSystemMessage(Component.literal("§b.shortcut add <phrase> <shortcut> §7- Add a shortcut for a phrase. Shortcuts will be replaced with the corresponding phrase."));
                     player.sendSystemMessage(Component.literal("§b.shortcut remove <shortcut> §7- Remove a shortcut."));
 
