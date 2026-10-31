@@ -6,12 +6,11 @@ import com.Counter.config.CounterConfig;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.Identifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +20,7 @@ import java.util.Map;
 public class PhraseKeybindHandler implements ClientModInitializer {
     private static final int MAX_CHAT_LENGTH = 256;
 
-    private static final KeyMapping.Category CATEGORY =
-            KeyMapping.Category.register(
-                    Identifier.fromNamespaceAndPath("counter", "phrase_counter")
-            );
+    private static final String CATEGORY = "key.categories.counter";
 
     private static int pendingPresses;
     private static boolean wasBatchModifierDown;
@@ -37,17 +33,17 @@ public class PhraseKeybindHandler implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        KeyMapping key = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KeyMapping key = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.counter.send_assigned_phrase",
-                InputConstants.Type.KEYBOARD,
-                21, // R
+                InputConstants.Type.KEYSYM,
+                82, // R (GLFW key code)
                 CATEGORY
         ));
 
-        KeyMapping batchModifier = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+        KeyMapping batchModifier = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key.counter.batch_modifier",
-                InputConstants.Type.KEYBOARD,
-                225, // Left Shift (SDL3 scancode)
+                InputConstants.Type.KEYSYM,
+                340, // Left Shift (GLFW key code)
                 CATEGORY
         ));
 
@@ -64,7 +60,7 @@ public class PhraseKeybindHandler implements ClientModInitializer {
             boolean batchModifierDown = batchModifier.isDown();
 
             // Never activate a gameplay keybind while a screen is open.
-            if (client.gui.screen() == null) {
+            if (client.screen == null) {
                 while (key.consumeClick()) {
                     if (batchModifierDown) {
                         pendingPresses++;

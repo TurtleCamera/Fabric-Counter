@@ -263,7 +263,7 @@ public class ModifyMessageMixin {
                                 chunk,
                                 instantChunk,
                                 lChunk,
-                                Optional.ofNullable(messageSignatureChunk),
+                                messageSignatureChunk,
                                 updateChunk.update()
                         )
                 );

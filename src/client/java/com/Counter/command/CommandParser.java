@@ -1,3 +1,4 @@
+
 package com.Counter.command;
 
 import java.util.HashMap;
@@ -44,11 +45,11 @@ public class CommandParser {
 
         // Different cases for each type
         switch (type) {
-            case ModCommand.ArgType.STRING:
+            case STRING:
                 // The argument being passed is a string, so this is always true
                 parsedArgs.put(argName, arg);
                 return true;
-            case ModCommand.ArgType.INTEGER:
+            case INTEGER:
                 try {
                     int intArg = Integer.parseInt(arg);
                     parsedArgs.put(argName, intArg);
@@ -56,7 +57,7 @@ public class CommandParser {
                 } catch (NumberFormatException e) {
                     return false;
                 }
-            case ModCommand.ArgType.DOUBLE:
+            case DOUBLE:
                 try {
                     double doubleArg = Double.parseDouble(arg);
                     parsedArgs.put(argName, doubleArg);
@@ -64,10 +65,10 @@ public class CommandParser {
                 } catch (NumberFormatException e) {
                     return false;
                 }
-            case ModCommand.ArgType.GREEDY:
+            case GREEDY:
                 parsedArgs.put(argName, arg);
                 return true;
-            case ModCommand.ArgType.LITERAL:
+            case LITERAL:
                 // If the list of literals is empty, then set the literalIndex to -1
                 if (literals == null) {
                     literalIndex = -1;
